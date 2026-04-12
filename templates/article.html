@@ -158,7 +158,7 @@
         });
     })();
 
-    // Scroll-spy: highlight active TOC item
+    // Scroll-spy: highlight active TOC item with auto-scroll
     (function () {
         const tocNav = document.querySelector('.toc-nav');
         if (!tocNav) return;
@@ -179,6 +179,23 @@
         // Set initial active
         sections[0].anchor.classList.add('active');
 
+        // Auto-scroll TOC to keep active item visible
+        function scrollToActiveItem(anchor) {
+            const tocRect = tocNav.getBoundingClientRect();
+            const anchorRect = anchor.getBoundingClientRect();
+            
+            // Check if item is outside visible area
+            if (anchorRect.top < tocRect.top || anchorRect.bottom > tocRect.bottom) {
+                // Center the active item in the TOC
+                const scrollTop = tocNav.scrollTop;
+                const itemOffset = anchor.offsetTop - (tocNav.clientHeight / 2) + (anchor.clientHeight / 2);
+                tocNav.scrollTo({
+                    top: Math.max(0, itemOffset),
+                    behavior: 'smooth'
+                });
+            }
+        }
+
         // Use IntersectionObserver for tracking
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -187,6 +204,7 @@
                     if (idx !== -1) {
                         sections.forEach(s => s.anchor.classList.remove('active'));
                         sections[idx].anchor.classList.add('active');
+                        scrollToActiveItem(sections[idx].anchor);
                     }
                 }
             });
@@ -211,6 +229,7 @@
                 if (!last.anchor.classList.contains('active')) {
                     sections.forEach(s => s.anchor.classList.remove('active'));
                     last.anchor.classList.add('active');
+                    scrollToActiveItem(last.anchor);
                 }
             }
         }, { passive: true });
