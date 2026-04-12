@@ -192,8 +192,7 @@ function cleanOutput() {
     }
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     fs.mkdirSync(path.join(OUTPUT_DIR, 'assets'), { recursive: true });
-    fs.mkdirSync(path.join(OUTPUT_DIR, 'posts'), { recursive: true });
-    fs.mkdirSync(path.join(OUTPUT_DIR, 'page'), { recursive: true });
+    fs.mkdirSync(path.join(OUTPUT_DIR, 'categories'), { recursive: true });
 }
 
 // Copy assets
@@ -206,31 +205,50 @@ function copyAssets() {
     });
 }
 
-// Read all posts
+// Read all posts (supports categories as subdirectories)
 function readPosts() {
-    const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'));
     const posts = [];
 
-    files.forEach(file => {
-        const content = fs.readFileSync(path.join(POSTS_DIR, file), 'utf-8');
-        const { html, frontmatter, toc } = parseMarkdown(content);
-        const slug = generateSlug(file);
+    // Recursively read directories
+    function readDirRecursive(dir, baseDir) {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        
+        entries.forEach(entry => {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                readDirRecursive(fullPath, baseDir);
+            } else if (entry.isFile() && entry.name.endsWith('.md')) {
+                const content = fs.readFileSync(fullPath, 'utf-8');
+                const { html, frontmatter, toc } = parseMarkdown(content);
+                
+                // Category is the subdirectory name relative to posts/
+                const relativePath = path.relative(baseDir, fullPath);
+                const pathParts = path.dirname(relativePath).split(path.sep);
+                const category = pathParts.length > 0 && pathParts[0] !== '' ? pathParts[0] : '';
+                
+                const slug = generateSlug(entry.name);
+                const urlSlug = category ? `${category}/${slug}` : slug;
 
-        // Add lazy loading to images (Zero Dependency Optimization)
-        const lazyHtml = html.replace(/<img /g, '<img loading="lazy" ');
+                // Add lazy loading to images (Zero Dependency Optimization)
+                const lazyHtml = html.replace(/<img /g, '<img loading="lazy" ');
 
-        posts.push({
-            slug,
-            filename: file,
-            title: frontmatter.title || 'Untitled',
-            date: frontmatter.date || '',
-            tags: frontmatter.tags || [],
-            content: lazyHtml,
-            toc: toc,
-            excerpt: html.replace(/<[^>]*>/g, '').substring(0, 200) + '...', // Plain text excerpt
-            description: frontmatter.description || html.replace(/<[^>]*>/g, '').substring(0, 160).trim() // For SEO
+                posts.push({
+                    slug: urlSlug,
+                    filename: entry.name,
+                    category: category,
+                    title: frontmatter.title || 'Untitled',
+                    date: frontmatter.date || '',
+                    tags: frontmatter.tags || [],
+                    content: lazyHtml,
+                    toc: toc,
+                    excerpt: lazyHtml.replace(/<[^>]*>/g, '').substring(0, 200) + '...',
+                    description: frontmatter.description || lazyHtml.replace(/<[^>]*>/g, '').substring(0, 160).trim()
+                });
+            }
         });
-    });
+    }
+
+    readDirRecursive(POSTS_DIR, POSTS_DIR);
 
     // Sort by date descending
     return posts.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -248,7 +266,7 @@ function generateHomepage(posts, page = 1) {
         renderPostList(posts, '');
         const html = renderTemplate(layoutTemplate, {
             TITLE: 'My Blog',
-            SIDEBAR: renderSidebar(),
+            SIDEBAR: renderSidebar(posts),
             CONTENT: renderPostList(posts, ''),
             PAGINATION: ''
         });
@@ -293,18 +311,29 @@ function generateHomepage(posts, page = 1) {
 
     const html = renderTemplate(layoutTemplate, {
         TITLE: page === 1 ? 'My Blog' : `第 ${page} 页 - My Blog`,
-        SIDEBAR: page === 1 ? renderSidebar() : '',
+        SIDEBAR: page === 1 ? renderSidebar(posts) : '',
         CONTENT: content,
         PAGINATION: pagination
     });
 
     const filename = page === 1 ? 'index.html' : `page/${page}.html`;
+    
+    // Create page directory for pagination pages
+    if (page > 1) {
+        const pageDir = path.join(OUTPUT_DIR, 'page');
+        if (!fs.existsSync(pageDir)) {
+            fs.mkdirSync(pageDir, { recursive: true });
+        }
+    }
+    
     fs.writeFileSync(path.join(OUTPUT_DIR, filename), html);
     console.log(`Generated: ${filename}`);
 }
 
 // Render homepage sidebar
-function renderSidebar() {
+function renderSidebar(posts) {
+    const categoryHtml = getCategoryList(posts);
+    
     return `
 <div class="sidebar-card">
     <div class="sidebar-avatar">
@@ -316,18 +345,7 @@ function renderSidebar() {
     </div>
 </div>
 
-<div class="sidebar-card">
-    <div class="sidebar-card-title">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-        加入社区
-    </div>
-    <div class="sidebar-links">
-        <a href="https://t.me/your_group" class="sidebar-link telegram" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-            Telegram 交流群
-        </a>
-    </div>
-</div>
+${categoryHtml}
 
 <div class="sidebar-card">
     <div class="sidebar-card-title">快速导航</div>
@@ -351,7 +369,10 @@ function renderPostList(posts, className = '', currentPage = 1) {
         html += `
         <article class="post-item">
             ${metaHtml}
-            <h2 class="post-title"><a href="/posts/${post.slug}.html">${post.title}</a></h2>
+            <h2 class="post-title">
+                <a href="/posts/${post.slug}.html">${post.title}</a>
+                ${post.category ? `<span class="post-category"><a href="/categories/${post.category}.html">${post.category}</a></span>` : ''}
+            </h2>
             <p class="post-excerpt">${post.excerpt}</p>
             <div class="post-tags">
                 ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
@@ -445,7 +466,11 @@ function generatePostPages(posts) {
             CONTENT: content
         });
 
-        fs.writeFileSync(path.join(OUTPUT_DIR, 'posts', `${post.slug}.html`), html);
+        const outputDir = path.join(OUTPUT_DIR, 'posts', post.category);
+        fs.mkdirSync(outputDir, { recursive: true });
+        
+        const outputPath = path.join(outputDir, `${post.filename.replace(/\.md$/, '')}.html`);
+        fs.writeFileSync(outputPath, html);
         console.log(`Generated: posts/${post.slug}.html`);
     });
 }
@@ -465,6 +490,68 @@ function generateSearchIndex(posts) {
     const json = JSON.stringify(index, null, 2);
     fs.writeFileSync(path.join(OUTPUT_DIR, 'search-index.json'), json);
     console.log('Generated: search-index.json');
+}
+
+// Generate category pages
+function generateCategoryPages(posts) {
+    // Get all categories
+    const categories = [...new Set(posts.map(p => p.category).filter(c => c))];
+    
+    if (categories.length === 0) {
+        console.log('No categories found');
+        return;
+    }
+
+    const categoryTemplate = fs.readFileSync(path.join(TEMPLATES_DIR, 'layout.html'), 'utf-8');
+
+    categories.forEach(category => {
+        const categoryPosts = posts.filter(p => p.category === category);
+        
+        // Generate category header
+        let content = `<div class="category-header">
+            <h1>${category}</h1>
+            <p class="category-count">${categoryPosts.length} 篇文章</p>
+        </div>\n`;
+        
+        content += renderPostList(categoryPosts, '');
+
+        const html = renderTemplate(categoryTemplate, {
+            TITLE: `${category} - My Blog`,
+            SIDEBAR: renderSidebar(posts),  // Show sidebar with avatar
+            CONTENT: content,
+            PAGINATION: ''
+        });
+
+        const outputPath = path.join(OUTPUT_DIR, 'categories', `${category}.html`);
+        fs.writeFileSync(outputPath, html);
+        console.log(`Generated: categories/${category}.html`);
+    });
+}
+
+// Generate category list for sidebar
+function getCategoryList(posts) {
+    const categories = [...new Set(posts.map(p => p.category).filter(c => c))];
+    
+    if (categories.length === 0) return '';
+
+    const MAX_VISIBLE = 4;
+    const hasMore = categories.length > MAX_VISIBLE;
+    
+    let html = '<div class="sidebar-card"><div class="sidebar-card-title">分类目录</div><div class="category-list">';
+    
+    categories.forEach((category, index) => {
+        const count = posts.filter(p => p.category === category).length;
+        const isHidden = index >= MAX_VISIBLE ? ' hidden' : '';
+        html += `<a href="/categories/${category}.html" class="sidebar-link${isHidden}">📁 ${category} (${count})</a>`;
+    });
+    
+    if (hasMore) {
+        const hiddenCount = categories.length - MAX_VISIBLE;
+        html += `<button class="category-toggle" onclick="this.parentElement.classList.toggle('expanded');this.textContent=this.parentElement.classList.contains('expanded')?'收起':'展开 (+' + ${hiddenCount} + ')';">展开 (+${hiddenCount})</button>`;
+    }
+    
+    html += '</div></div>';
+    return html;
 }
 
 // Generate search page
@@ -550,6 +637,7 @@ function build() {
 
     generatePaginationPages(posts);
     generatePostPages(posts);
+    generateCategoryPages(posts);
     generateArchive(posts);
     generateSearchIndex(posts);
     generateSearchPage(posts);
