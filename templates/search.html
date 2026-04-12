@@ -66,6 +66,12 @@
         var DURATION = 320;
         var isTransitioning = false;
 
+        function clearTransition() {
+            document.body.classList.remove('page-fade-out', 'page-fade-in');
+            overlay.classList.remove('page-transition-active');
+            isTransitioning = false;
+        }
+
         document.addEventListener('click', function(e) {
             var link = e.target.closest('a');
             if (!link || isTransitioning) return;
@@ -87,7 +93,8 @@
             }
         });
 
-        window.addEventListener('load', function() {
+        window.addEventListener('pageshow', function(e) {
+            clearTransition();
             document.body.classList.add('page-fade-in');
             setTimeout(function() {
                 document.body.classList.remove('page-fade-in');

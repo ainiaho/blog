@@ -63,10 +63,16 @@
     // 页面转场过渡动画
     (function() {
         var overlay = document.getElementById('page-transition');
-        var DURATION = 320; // 动画时长 (ms)
+        var DURATION = 320;
         var isTransitioning = false;
 
-        // 所有内部链接点击拦截
+        // 清除所有过渡状态
+        function clearTransition() {
+            document.body.classList.remove('page-fade-out', 'page-fade-in');
+            overlay.classList.remove('page-transition-active');
+            isTransitioning = false;
+        }
+
         document.addEventListener('click', function(e) {
             var link = e.target.closest('a');
             if (!link || isTransitioning) return;
@@ -75,24 +81,22 @@
             if (!href || href.startsWith('#') || href.startsWith('mailto:') ||
                 href.startsWith('javascript:') || link.target === '_blank') return;
 
-            // 只处理站内链接
             if (href.startsWith('/') || href.indexOf(window.location.hostname) !== -1) {
                 e.preventDefault();
                 isTransitioning = true;
 
-                // 添加淡出类
                 document.body.classList.add('page-fade-out');
                 overlay.classList.add('page-transition-active');
 
-                // 动画结束后跳转
                 setTimeout(function() {
                     window.location.href = href;
                 }, DURATION);
             }
         });
 
-        // 页面加载时淡入
-        window.addEventListener('load', function() {
+        // 使用 pageshow 代替 load，覆盖浏览器前进/后退 (bfcache)
+        window.addEventListener('pageshow', function(e) {
+            clearTransition();
             document.body.classList.add('page-fade-in');
             setTimeout(function() {
                 document.body.classList.remove('page-fade-in');
