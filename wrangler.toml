@@ -1,0 +1,6 @@
+name = "my-blog"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "node scripts/build.js"
+output_dir = "output"

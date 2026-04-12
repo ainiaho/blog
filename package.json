@@ -1,0 +1,16 @@
+{
+  "name": "blog",
+  "version": "1.0.0",
+  "description": "Personal static blog",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "dev": "node scripts/build.js && npx serve output"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "marked": "^18.0.0"
+  }
+}
