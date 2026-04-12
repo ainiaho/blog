@@ -436,7 +436,7 @@ function generateHomepage(posts, page = 1) {
     if (totalPages <= 1) {
         renderPostList(posts, '');
         const html = renderTemplate(layoutTemplate, {
-            TITLE: 'My Blog',
+            TITLE: '西南',
             SIDEBAR: renderSidebar(posts),
             CONTENT: renderPostList(posts, ''),
             PAGINATION: ''
@@ -481,7 +481,7 @@ function generateHomepage(posts, page = 1) {
     pagination += '</div>';
 
     const html = renderTemplate(layoutTemplate, {
-        TITLE: page === 1 ? 'My Blog' : `第 ${page} 页 - My Blog`,
+        TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
         SIDEBAR: renderSidebar(posts),
         CONTENT: content,
         PAGINATION: pagination
@@ -631,7 +631,7 @@ function generatePostPages(posts) {
         `;
 
         const html = renderTemplate(articleTemplate, {
-            TITLE: post.title + ' - My Blog',
+            TITLE: post.title + ' - 西南',
             TOC: post.toc,
             CONTENT: content
         });
@@ -686,7 +686,7 @@ function generateCategoryPages(posts) {
         content += renderPostList(categoryPosts, '');
 
         const html = renderTemplate(categoryTemplate, {
-            TITLE: `${category} - My Blog`,
+            TITLE: `${category} - 西南`,
             SIDEBAR: renderSidebar(posts),  // Show sidebar with avatar
             CONTENT: content,
             PAGINATION: ''
@@ -756,7 +756,7 @@ function generateSearchPage(posts) {
 `;
 
     const html = renderTemplate(searchTemplate, {
-        TITLE: '搜索 - My Blog',
+        TITLE: '搜索 - 西南',
         CONTENT: content,
         SEARCH_DATA: searchData
     });
