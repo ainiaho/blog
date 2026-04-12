@@ -1219,354 +1219,86 @@ body {
 }
 
 /* ============================================================
-   响应式 — 平板端 (≤1024px)
-   ============================================================ */
-@media (max-width: 1024px) {
-    .home-layout,
-    .article-layout {
-        max-width: 960px;
-        padding: 20px 20px 40px;
-        gap: 16px;
-    }
-
-    .home-sidebar {
-        width: 220px;
-    }
-
-    .article-sidebar {
-        width: 200px;
-    }
-}
-
-/* ============================================================
-   响应式 — 移动端 (≤768px)
+   响应式
    ============================================================ */
 @media (max-width: 768px) {
-    /* ---------- 导航栏 ---------- */
-    .site-header {
-        height: 48px;
-    }
-
     .site-header .container {
         padding: 0 12px;
     }
+    main { padding: 12px 12px 32px; }
+    .post-item { padding: 16px; }
+    .post-title { font-size: 16px; }
+    .post-header { padding: 16px; }
+    .post-header h1 { font-size: 18px; }
+    .post-content { padding: 16px; }
+    .post-nav { flex-direction: column; }
+    .archive-item { padding: 12px 16px; }
 
-    .site-title {
-        font-size: 16px;
-    }
-
-    .nav-links {
-        gap: 2px;
-    }
-
-    .nav-links a {
-        padding: 4px 8px;
-        font-size: 13px;
-    }
-
-    /* ---------- 首页布局 ---------- */
+    /* 首页侧栏变顶部横栏 */
     .home-layout {
         flex-direction: column;
-        padding: 16px 12px 32px;
-        gap: 16px;
+        padding: 12px 12px 32px;
     }
-
     .home-sidebar {
         width: 100%;
         position: static;
+        max-height: none;
         flex-direction: row;
         flex-wrap: wrap;
-        gap: 12px;
     }
-
     .home-sidebar .sidebar-card {
         flex: 1;
-        min-width: calc(50% - 6px);
-        padding: 16px;
+        min-width: 200px;
     }
-
-    /* 头像卡片占满整行 */
     .home-sidebar .sidebar-card:first-child {
         flex-basis: 100%;
     }
-
     .sidebar-avatar img {
-        width: 64px;
-        height: 64px;
+        width: 60px;
+        height: 60px;
     }
 
-    .sidebar-name {
-        font-size: 15px;
-    }
-
-    .sidebar-card-title {
-        font-size: 13px;
-        margin-bottom: 8px;
-        padding-bottom: 8px;
-    }
-
-    .sidebar-link,
-    .category-list .sidebar-link {
-        padding: 6px 10px;
-        font-size: 13px;
-    }
-
-    /* ---------- 文章列表 ---------- */
-    .post-list {
-        gap: 12px;
-    }
-
-    .post-item {
-        padding: 16px;
-    }
-
-    .post-item:hover {
-        transform: none;
-    }
-
-    .post-meta {
-        font-size: 12px;
-    }
-
-    .post-title {
-        font-size: 16px;
-        margin-bottom: 6px;
-    }
-
-    .post-excerpt {
-        font-size: 13px;
-        line-height: 1.6;
-    }
-
-    /* ---------- 文章页布局 ---------- */
+    /* 文章页目录变顶部 */
     .article-layout {
         flex-direction: column;
-        padding: 16px 12px 32px;
-        gap: 16px;
+        padding: 12px 12px 32px;
     }
-
     .article-sidebar {
         width: 100%;
         position: static;
         max-height: none;
     }
-
-    .toc-nav {
-        max-height: none;
-        padding: 12px 0;
-    }
-
-    .toc-title {
-        display: none;
-    }
-
     .toc-nav ul {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 4px;
     }
-
+    .toc-title { display: none; }
     .toc-item a {
-        padding: 6px 10px;
+        padding: 6px 12px;
         border-left: none;
         border-radius: 10px;
         border: 1px solid transparent;
         font-size: 12px;
     }
-
     .toc-level-2 a,
-    .toc-level-3 a {
-        padding-left: 10px;
-    }
-
-    .toc-item a:hover {
+    .toc-level-3 a { padding-left: 12px; }
+    .toc-item a:hover,
+    .toc-item a:active {
+        color: var(--accent);
         background: rgba(0, 122, 255, 0.06);
     }
-
     .toc-item.active a {
         background: var(--accent-light);
         border-color: rgba(0, 122, 255, 0.3);
         color: var(--accent);
-        font-weight: 500;
-    }
-
-    /* ---------- 文章头部与正文 ---------- */
-    .post-header {
-        padding: 16px;
-    }
-
-    .post-header h1 {
-        font-size: 20px;
-    }
-
-    .post-content {
-        padding: 16px;
-        padding-bottom: 160px;
-    }
-
-    .post-content pre,
-    .post-content .highlight pre {
-        padding: 12px;
-        font-size: 13px;
-    }
-
-    /* ---------- 翻页导航 ---------- */
-    .post-nav {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .post-nav a,
-    .post-nav span {
-        padding: 10px 12px;
-        font-size: 13px;
-    }
-
-    /* ---------- 分页 ---------- */
-    .pagination {
-        gap: 4px;
-        margin-top: 16px;
-        padding: 12px 0;
-    }
-
-    .pagination-btn {
-        min-width: 32px;
-        padding: 6px 8px;
-        font-size: 13px;
-    }
-
-    /* ---------- 归档/分类页 ---------- */
-    .archive-header,
-    .category-header {
-        padding: 16px;
-    }
-
-    .archive-header h1,
-    .category-header h1 {
-        font-size: 18px;
-    }
-
-    .archive-year {
-        padding: 0 12px;
-    }
-
-    .archive-item {
-        padding: 12px 16px;
-    }
-
-    .archive-item:hover {
-        transform: none;
-    }
-
-    /* ---------- 搜索页 ---------- */
-    .search-page-wrapper {
-        padding: 40px 12px 32px;
-    }
-
-    .search-header,
-    .search-container {
-        padding: 20px;
-        max-width: 100%;
-    }
-
-    .search-input {
-        padding: 10px 32px 10px 36px;
-        font-size: 14px;
-    }
-
-    .search-box .search-icon {
-        left: 12px;
-    }
-
-    /* ---------- 分享区域 ---------- */
-    .share-section {
-        padding: 16px;
-    }
-
-    .share-buttons {
-        gap: 6px;
-    }
-
-    .share-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-
-    .share-btn span {
-        display: none;
-    }
-
-    .share-btn {
-        padding: 8px;
-    }
-
-    /* ---------- 页脚 ---------- */
-    .site-footer {
-        padding: 16px 12px;
-        font-size: 12px;
     }
 }
 
-/* ============================================================
-   响应式 — 小屏手机 (≤576px)
-   ============================================================ */
 @media (max-width: 576px) {
-    .nav-links a {
-        padding: 4px 6px;
-        font-size: 12px;
-    }
-
-    .home-layout,
-    .article-layout {
-        padding: 12px 8px 24px;
-        gap: 12px;
-    }
-
-    .post-item {
-        padding: 14px;
-    }
-
-    .post-title {
-        font-size: 15px;
-    }
-
-    .post-meta {
-        font-size: 11px;
-    }
-
-    .post-excerpt {
-        font-size: 12px;
-    }
-
-    .home-sidebar .sidebar-card {
-        min-width: 100%;
-        padding: 14px;
-    }
-
-    .sidebar-avatar img {
-        width: 56px;
-        height: 56px;
-    }
-
-    .post-header h1 {
-        font-size: 18px;
-    }
-
-    .post-content {
-        padding: 14px;
-        padding-bottom: 120px;
-    }
-
-    .archive-item {
-        padding: 10px 12px;
-        gap: 8px;
-    }
-
-    .archive-item a {
-        font-size: 14px;
-    }
-
-    .archive-date {
-        font-size: 12px;
-    }
+    .nav-links a { padding: 4px 8px; font-size: 13px; }
+    .post-meta { font-size: 12px; }
+    .post-excerpt { font-size: 13px; }
+    .post-title { font-size: 15px; }
+    .archive-header h1 { font-size: 17px; }
 }

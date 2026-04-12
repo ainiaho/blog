@@ -5,7 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{TITLE}}</title>
     <link rel="stylesheet" href="/assets/github-markdown.css">
-    <link rel="stylesheet" href="/assets/style.css">
+    <link rel="stylesheet" href="/assets/style.css" media="screen and (min-width: 769px)">
+    <link rel="stylesheet" href="/assets/style-mobile.css" media="screen and (max-width: 768px)">
+    <script>
+    // 动态加载样式 - 根据屏幕宽度切换
+    (function() {
+        function loadCSS() {
+            const isMobile = window.innerWidth <= 768;
+            const desktopCSS = document.querySelector('link[href="/assets/style.css"]');
+            const mobileCSS = document.querySelector('link[href="/assets/style-mobile.css"]');
+            if (isMobile) {
+                desktopCSS.media = 'none';
+                mobileCSS.media = 'all';
+            } else {
+                desktopCSS.media = 'all';
+                mobileCSS.media = 'none';
+            }
+        }
+        loadCSS();
+        window.addEventListener('resize', loadCSS);
+    })();
+    </script>
 </head>
 <body>
     <div class="page-wrapper">
