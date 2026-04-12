@@ -311,7 +311,7 @@ function generateHomepage(posts, page = 1) {
 
     const html = renderTemplate(layoutTemplate, {
         TITLE: page === 1 ? 'My Blog' : `第 ${page} 页 - My Blog`,
-        SIDEBAR: page === 1 ? renderSidebar(posts) : '',
+        SIDEBAR: renderSidebar(posts),
         CONTENT: content,
         PAGINATION: pagination
     });
