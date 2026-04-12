@@ -21,19 +21,77 @@
         inset 0 -1px 0 rgba(255, 255, 255, 0.3);
     --glass-radius: 20px;
     --glass-radius-sm: 14px;
-    
+
     /* Accent Colors */
     --accent: #007aff;
     --accent-hover: #005ecb;
     --accent-light: rgba(0, 122, 255, 0.08);
-    
+
     /* Text Colors (darkened for glass contrast) */
     --text-primary: #1a1a1a;
     --text-secondary: #555555;
     --text-tertiary: #888888;
-    
+
     --max-width: 960px;
     --transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    /* 页面转场 */
+    --page-transition-duration: 320ms;
+    --page-transition-bg: rgba(255, 255, 255, 0.92);
+}
+
+/* ============================================================
+   页面转场过渡动画
+   ============================================================ */
+.page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0;
+    background: var(--page-transition-bg);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    transition: opacity var(--page-transition-duration) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-transition-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.page-fade-in {
+    animation: pageFadeIn var(--page-transition-duration) ease-out;
+}
+
+body.page-fade-out {
+    animation: pageFadeOut var(--page-transition-duration) ease-in;
+    pointer-events: none;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pageFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0.6;
+        transform: translateY(-4px);
+    }
 }
 
 /* ---------- Reset ---------- */

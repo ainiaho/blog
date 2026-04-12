@@ -350,7 +350,6 @@ ${categoryHtml}
 <div class="sidebar-card">
     <div class="sidebar-card-title">快速导航</div>
     <div class="sidebar-links">
-        <a href="/archive.html" class="sidebar-link">📅 文章归档</a>
         <a href="/search.html" class="sidebar-link">🔍 搜索文章</a>
     </div>
 </div>
@@ -595,58 +594,6 @@ function generateSearchPage(posts) {
     console.log('Generated: search.html');
 }
 
-// Generate archive page
-function generateArchive(posts) {
-    let content = '<div class="markdown-body archive-header"><h1>归档</h1></div>\n<div class="archive-list">\n';
-
-    let currentYear = '';
-    posts.forEach(post => {
-        const year = new Date(post.date).getFullYear().toString();
-        if (year !== currentYear) {
-            content += `<h2 class="archive-year">${year}</h2>`;
-            currentYear = year;
-        }
-        content += `
-        <div class="archive-item">
-            <a href="/posts/${post.slug}.html">${post.title}</a>
-            <span class="archive-date">${formatDate(post.date)}</span>
-        </div>
-        `;
-    });
-
-    content += '</div>';
-
-    const html = renderTemplate(layoutTemplate, {
-        TITLE: '归档 - My Blog',
-        CONTENT: content
-    });
-
-    fs.writeFileSync(path.join(OUTPUT_DIR, 'archive.html'), html);
-    console.log('Generated: archive.html');
-}
-
-// Main build function
-function build() {
-    console.log('Building static blog...\n');
-
-    cleanOutput();
-    copyAssets();
-
-    const posts = readPosts();
-    console.log(`Found ${posts.length} posts\n`);
-
-    generatePaginationPages(posts);
-    generatePostPages(posts);
-    generateCategoryPages(posts);
-    generateArchive(posts);
-    generateSearchIndex(posts);
-    generateSearchPage(posts);
-    generate404();
-    generateSitemap(posts);
-
-    console.log('\nBuild complete! Output directory: output/');
-}
-
 // Generate 404 page
 function generate404() {
     const html = `<!DOCTYPE html>
@@ -706,7 +653,7 @@ function generateSitemap(posts) {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
     // Static pages
-    ['', '/archive.html', '/search.html'].forEach(page => {
+    ['', '/search.html'].forEach(page => {
         xml += `  <url><loc>${baseUrl}${page}</loc><priority>${page === '' ? '1.0' : '0.8'}</priority></url>\n`;
     });
 
@@ -718,6 +665,27 @@ function generateSitemap(posts) {
     xml += '</urlset>';
     fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap.xml'), xml);
     console.log('Generated: sitemap.xml');
+}
+
+// Main build function
+function build() {
+    console.log('Building static blog...\n');
+
+    cleanOutput();
+    copyAssets();
+
+    const posts = readPosts();
+    console.log(`Found ${posts.length} posts\n`);
+
+    generatePaginationPages(posts);
+    generatePostPages(posts);
+    generateCategoryPages(posts);
+    generateSearchIndex(posts);
+    generateSearchPage(posts);
+    generate404();
+    generateSitemap(posts);
+
+    console.log('\nBuild complete! Output directory: output/');
 }
 
 // Run build
