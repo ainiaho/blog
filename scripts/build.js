@@ -24,36 +24,190 @@ function highlightCode(code, lang) {
     if (!lang) return code;
     lang = lang.toLowerCase();
 
-    if (['javascript', 'js', 'typescript', 'ts', 'json'].includes(lang)) {
-        // Strings
-        code = code.replace(/('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/g, '<span class="hl-string">$1</span>');
-        // Comments
-        code = code.replace(/(\/\/.*$)/gm, '<span class="hl-comment">$1</span>');
-        code = code.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="hl-comment">$1</span>');
-        // Keywords
-        code = code.replace(/\b(const|let|var|function|class|import|from|export|default|if|else|for|while|return|try|catch|new|this|true|false|null|undefined|async|await|switch|case|break|continue|typeof|instanceof)\b/g, '<span class="hl-keyword">$1</span>');
-        // Numbers
-        code = code.replace(/\b(\d+)\b/g, '<span class="hl-number">$1</span>');
-        // Functions
-        code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\()/g, '<span class="hl-func">$1</span>');
+    // Use placeholder protection: save existing spans, replace with placeholders,
+    // apply highlighting, then restore. This prevents double-wrapping.
+    const spans = [];
+    function protect(code) {
+        return code.replace(/<span class="[^"]*">[\s\S]*?<\/span>/g, (m) => {
+            spans.push(m);
+            return `\x00SPAN${spans.length - 1}\x00`;
+        });
     }
-    else if (['html', 'xml'].includes(lang)) {
-        code = code.replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="hl-tag">$2</span>');
-        code = code.replace(/([\w-]+)(=)/g, '<span class="hl-attr">$1</span>$2');
-        code = code.replace(/(".*?")/g, '<span class="hl-string">$1</span>');
-    }
-    else if (['css', 'scss', 'less'].includes(lang)) {
-        code = code.replace(/([\w-]+)(?=\s*:)/g, '<span class="hl-attr">$1</span>');
-        code = code.replace(/(:)\s*([^;]+)/g, '$1 <span class="hl-value">$2</span>');
-        code = code.replace(/(\.[\w-]+)/g, '<span class="hl-class">$1</span>');
-        code = code.replace(/(#[\w-]+)/g, '<span class="hl-id">$1</span>');
-    }
-    else if (['markdown', 'md'].includes(lang)) {
-        code = code.replace(/(#{1,6}.+)/g, '<span class="hl-keyword">$1</span>');
-        code = code.replace(/(`[^`]+`)/g, '<span class="hl-string">$1</span>');
-        code = code.replace(/(\*\*|__|~~|\*|_)/g, '<span class="hl-bold">$1</span>');
+    function restore(code) {
+        return code.replace(/\x00SPAN(\d+)\x00/g, (_, i) => spans[parseInt(i)]);
     }
 
+    if (['javascript', 'js', 'typescript', 'ts'].includes(lang)) {
+        code = jsHighlight(code);
+    }
+    else if (['python', 'py'].includes(lang)) {
+        code = pythonHighlight(code);
+    }
+    else if (['html', 'xml'].includes(lang)) {
+        code = htmlHighlight(code);
+    }
+    else if (['css', 'scss', 'less'].includes(lang)) {
+        code = cssHighlight(code);
+    }
+    else if (['bash', 'sh', 'shell', 'zsh'].includes(lang)) {
+        code = bashHighlight(code);
+    }
+    else if (['sql'].includes(lang)) {
+        code = sqlHighlight(code);
+    }
+    else if (['json'].includes(lang)) {
+        code = jsonHighlight(code);
+    }
+    else if (['markdown', 'md'].includes(lang)) {
+        code = markdownHighlight(code);
+    }
+    else if (['yaml', 'yml'].includes(lang)) {
+        code = yamlHighlight(code);
+    }
+
+    return code;
+}
+
+// Safe span wrapping
+function safeSpan(text, className) {
+    return `<span class="${className}">${text}</span>`;
+}
+
+function jsHighlight(code) {
+    // Template strings
+    code = code.replace(/(`(?:[^`\\]|\\.)*`)/g, safeSpan('$1', 'hl-string'));
+    // Strings
+    code = code.replace(/("(?:[^"\\]|\\.)*")/g, safeSpan('$1', 'hl-string'));
+    code = code.replace(/('(?:[^'\\]|\\.)*')/g, safeSpan('$1', 'hl-string'));
+    // Comments
+    code = code.replace(/(\/\*[\s\S]*?\*\/)/g, safeSpan('$1', 'hl-comment'));
+    code = code.replace(/(\/\/.*$)/gm, safeSpan('$1', 'hl-comment'));
+    // Keywords
+    code = code.replace(/\b(const|let|var|function|class|import|from|export|default|if|else|for|while|do|return|try|catch|finally|throw|new|this|super|typeof|instanceof|in|of|delete|void|yield|async|await|switch|case|break|continue|extends|static|get|set|with)\b/g, safeSpan('$1', 'hl-keyword'));
+    // Built-in values
+    code = code.replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, safeSpan('$1', 'hl-literal'));
+    // Numbers
+    code = code.replace(/\b(\d+\.?\d*(?:e[+-]?\d+)?)\b/gi, safeSpan('$1', 'hl-number'));
+    // Functions
+    code = code.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)(?=\()/g, safeSpan('$1', 'hl-func'));
+    // Built-in objects
+    code = code.replace(/\b(console|window|document|Math|JSON|Promise|Array|Object|String|Number|Boolean|Map|Set|Date|RegExp|Error|parseInt|parseFloat|setTimeout|setInterval|require|module|process|Buffer)\b/g, safeSpan('$1', 'hl-built-in'));
+    return code;
+}
+
+function pythonHighlight(code) {
+    // After HTML escaping, " is &quot; — so we need to match that
+    // Triple-quoted strings (handle first)
+    code = code.replace(/(&quot;&quot;&quot;[\s\S]*?&quot;&quot;&quot;|'''[\s\S]*?''')/g, safeSpan('$1', 'hl-string'));
+    // Strings (f-strings, regular strings)
+    code = code.replace(/(f?&quot;(?:[^&]|&(?!quot;))*?&quot;)/g, safeSpan('$1', 'hl-string'));
+    code = code.replace(/('(?:[^'\\]|\\.)*')/g, safeSpan('$1', 'hl-string'));
+    // Comments
+    code = code.replace(/(#.*$)/gm, safeSpan('$1', 'hl-comment'));
+    // Numbers
+    code = code.replace(/\b(\d+\.?\d*(?:e[+-]?\d+)?)\b/gi, safeSpan('$1', 'hl-number'));
+    // Keywords (BEFORE decorators). Note: `class` uses negative lookahead to skip HTML attrs
+    code = code.replace(/\b(class)(?!\s*=)/g, safeSpan('$1', 'hl-keyword'));
+    code = code.replace(/\b(def|if|elif|else|for|while|return|import|from|as|try|except|finally|raise|with|yield|lambda|pass|break|continue|and|or|not|is|in|self|cls|None|True|False|async|await|global|nonlocal|assert|del|print)\b/g, safeSpan('$1', 'hl-keyword'));
+    // Built-in functions
+    code = code.replace(/\b(print|len|range|int|str|float|list|dict|set|tuple|type|isinstance|issubclass|map|filter|zip|enumerate|sorted|reversed|any|all|sum|min|max|abs|round|open|super|property|staticmethod|classmethod|getattr|setattr|hasattr|format|input|repr|hex|oct|bin|hash|id|vars|dir|help|next|iter|slice|object|Exception|ValueError|TypeError|KeyError|IndexError|FileNotFoundError|IOError|RuntimeError|NotImplementedError|AttributeError)\b/g, safeSpan('$1', 'hl-built-in'));
+    // Decorators (LAST)
+    code = code.replace(/^(\s*)(@[\w]+)/gm, '$1' + safeSpan('$2', 'hl-decorator'));
+    return code;
+}
+
+function htmlHighlight(code) {
+    // Comments
+    code = code.replace(/(&lt;!--[\s\S]*?--&gt;)/g, safeSpan('$1', 'hl-comment'));
+    // Tags
+    code = code.replace(/(&lt;\/?)([\w-]+)/g, '$1' + safeSpan('$2', 'hl-tag'));
+    // Closing tag bracket
+    code = code.replace(/(\/&gt;|&gt;)/g, safeSpan('$1', 'hl-tag'));
+    // Attributes
+    code = code.replace(/([\w-]+)(=)/g, safeSpan('$1', 'hl-attr') + '$2');
+    // Attribute values
+    code = code.replace(/(".*?")/g, safeSpan('$1', 'hl-string'));
+    return code;
+}
+
+function cssHighlight(code) {
+    // Comments
+    code = code.replace(/(\/\*[\s\S]*?\*\/)/g, safeSpan('$1', 'hl-comment'));
+    // At-rules
+    code = code.replace(/(@[\w-]+)/g, safeSpan('$1', 'hl-keyword'));
+    // Selectors
+    code = code.replace(/(\.[\w-]+)/g, safeSpan('$1', 'hl-class'));
+    code = code.replace(/(#[\w-]+)/g, safeSpan('$1', 'hl-id'));
+    // Properties and values
+    code = code.replace(/([\w-]+)(\s*:\s*)([^;]+)(;)/g, safeSpan('$1', 'hl-attr') + '$2' + safeSpan('$3', 'hl-value') + safeSpan('$4', 'hl-punct'));
+    // Numbers with units
+    code = code.replace(/\b(\d+)(px|em|rem|%|vh|vw|s|ms|deg|fr)/g, safeSpan('$1$2', 'hl-number'));
+    return code;
+}
+
+function bashHighlight(code) {
+    // Comments
+    code = code.replace(/(#.*$)/gm, safeSpan('$1', 'hl-comment'));
+    // Strings
+    code = code.replace(/(".*?")/g, safeSpan('$1', 'hl-string'));
+    code = code.replace(/('.*?')/g, safeSpan('$1', 'hl-string'));
+    // Variables
+    code = code.replace(/(\$\{?\w+\}?)/g, safeSpan('$1', 'hl-variable'));
+    // Keywords
+    code = code.replace(/\b(if|then|else|elif|fi|for|while|do|done|case|esac|function|return|exit|echo|cd|export|source|alias|sudo|chmod|mkdir|rm|cp|mv|ls|cat|grep|awk|sed|curl|wget|tar|zip|unzip|ssh|scp|pip|npm|yarn|node|python|docker)\b/g, safeSpan('$1', 'hl-keyword'));
+    return code;
+}
+
+function sqlHighlight(code) {
+    // Comments
+    code = code.replace(/(--.*$)/gm, safeSpan('$1', 'hl-comment'));
+    code = code.replace(/(\/\*[\s\S]*?\*\/)/g, safeSpan('$1', 'hl-comment'));
+    // Strings
+    code = code.replace(/('.*?')/g, safeSpan('$1', 'hl-string'));
+    // Keywords
+    code = code.replace(/\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|TABLE|INTO|VALUES|SET|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AND|OR|NOT|NULL|IS|AS|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|COUNT|SUM|AVG|MAX|MIN|INDEX|PRIMARY|KEY|FOREIGN|REFERENCES|CASCADE|CONSTRAINT|EXISTS|BETWEEN|LIKE|IN|CASE|WHEN|THEN|ELSE|END|DESC|ASC|IF)\b/gi, safeSpan('$1', 'hl-keyword'));
+    // Numbers
+    code = code.replace(/\b(\d+\.?\d*)\b/g, safeSpan('$1', 'hl-number'));
+    return code;
+}
+
+function jsonHighlight(code) {
+    // Keys
+    code = code.replace(/("(?:[^"\\]|\\.)*")(\s*:\s*)/g, safeSpan('$1', 'hl-attr') + '$2');
+    // String values
+    code = code.replace(/:\s*("(?:[^"\\]|\\.)*")/g, ': ' + safeSpan('$1', 'hl-string'));
+    // Numbers
+    code = code.replace(/:\s*(-?\d+\.?\d*(?:e[+-]?\d+)?)\b/gi, ': ' + safeSpan('$1', 'hl-number'));
+    // Booleans and null
+    code = code.replace(/:\s*(true|false|null)\b/g, ': ' + safeSpan('$1', 'hl-literal'));
+    return code;
+}
+
+function markdownHighlight(code) {
+    // Headings
+    code = code.replace(/^(#{1,6}\s+.+)$/gm, safeSpan('$1', 'hl-keyword'));
+    // Bold/Italic
+    code = code.replace(/(\*\*[^*]+\*\*|__[^_]+__)/g, safeSpan('$1', 'hl-bold'));
+    code = code.replace(/(\*[^*]+\*|_[^_]+_)/g, safeSpan('$1', 'hl-italic'));
+    // Inline code
+    code = code.replace(/(`[^`]+`)/g, safeSpan('$1', 'hl-string'));
+    // Links
+    code = code.replace(/(\[.*?\]\(.*?\))/g, safeSpan('$1', 'hl-link'));
+    // Lists
+    code = code.replace(/^(\s*[-*+]\s)/gm, safeSpan('$1', 'hl-keyword'));
+    code = code.replace(/^(\s*\d+\.\s)/gm, safeSpan('$1', 'hl-keyword'));
+    return code;
+}
+
+function yamlHighlight(code) {
+    // Comments
+    code = code.replace(/(#.*$)/gm, safeSpan('$1', 'hl-comment'));
+    // Keys
+    code = code.replace(/^([\w-]+)(\s*:)/gm, safeSpan('$1', 'hl-attr') + '$2');
+    // String values
+    code = code.replace(/:\s*("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, ': ' + safeSpan('$1', 'hl-string'));
+    // Booleans and null
+    code = code.replace(/:\s*(true|false|yes|no|on|off|null)\b/gi, ': ' + safeSpan('$1', 'hl-literal'));
     return code;
 }
 
@@ -64,7 +218,7 @@ function escapeHtml(text) {
 
 // Markdown Parser using marked
 
-// Custom renderer that adds IDs to headings (for TOC)
+// Custom renderer that adds IDs to headings (for TOC) and syntax highlighting for code
 const renderer = new marked.Renderer();
 const headings = [];
 
@@ -87,6 +241,23 @@ renderer.heading = function(options) {
 
     headings.push({ level, text, id });
     return `<h${level} id="${id}">${text}</h${level}>`;
+};
+
+// Code block syntax highlighting
+renderer.code = function(options) {
+    let lang, code;
+    if (typeof options === 'object') {
+        lang = options.lang || '';
+        code = options.text;
+    } else {
+        code = options;
+        lang = arguments[1];
+    }
+
+    const langAttr = lang ? ` data-lang="${lang}"` : '';
+    const highlighted = highlightCode(code, lang);
+
+    return `<pre${langAttr}><code class="language-${lang}">${highlighted}</code></pre>`;
 };
 
 // Marked configuration

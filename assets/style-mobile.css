@@ -551,6 +551,28 @@ body {
     border-radius: 6px !important;
 }
 
+/* ============================================================
+   代码语法高亮
+   ============================================================ */
+.hl-keyword   { color: #cf222e; font-weight: 500; }
+.hl-string     { color: #0a3069; }
+.hl-comment    { color: #6e7781; font-style: italic; }
+.hl-number     { color: #0550ae; }
+.hl-func       { color: #8250df; }
+.hl-built-in   { color: #0550ae; }
+.hl-literal    { color: #0550ae; font-weight: 500; }
+.hl-tag        { color: #116329; }
+.hl-attr       { color: #953800; }
+.hl-value      { color: #0a3069; }
+.hl-class      { color: #953800; }
+.hl-id         { color: #8250df; }
+.hl-punct      { color: #24292f; }
+.hl-decorator { color: #8250df; }
+.hl-variable   { color: #953800; }
+.hl-bold       { font-weight: 700; }
+.hl-italic     { font-style: italic; }
+.hl-link       { color: #0550ae; text-decoration: underline; }
+
 /* ---------- 代码块 ---------- */
 .post-content pre,
 .post-content .highlight pre {
