@@ -46,7 +46,7 @@
 html { scroll-behavior: smooth; }
 
 /* ============================================================
-   BODY — 丰富渐变背景（液态玻璃必须）
+   BODY — 自定义背景（支持图片或渐变）
    ============================================================ */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
@@ -54,7 +54,16 @@ body {
     font-size: 15px;
     line-height: 1.6;
     color: var(--text-primary);
+    /* 默认背景色 */
     background-color: #f2f2f7;
+    /* 如需自定义背景图片，取消注释并修改路径：
+    background-image: url('/assets/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    */
+    /* 默认渐变背景（如需去除，注释掉即可） */
     background-image:
         radial-gradient(ellipse at 10% 15%, rgba(120, 180, 255, 0.35) 0%, transparent 50%),
         radial-gradient(ellipse at 90% 25%, rgba(255, 140, 180, 0.3) 0%, transparent 45%),
