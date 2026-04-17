@@ -280,15 +280,11 @@ function parseMarkdown(md) {
 
         const titleMatch = frontmatterStr.match(/^title:\s*["'](.+?)["']/m);
         const dateMatch = frontmatterStr.match(/^date:\s*(.+)$/m);
-        const tagsMatch = frontmatterStr.match(/^tags:\s*\[(.+?)\]/m);
+        const authorMatch = frontmatterStr.match(/^author:\s*["'](.+?)["']/m);
 
         if (titleMatch) frontmatter.title = titleMatch[1];
         if (dateMatch) frontmatter.date = dateMatch[1].trim();
-        if (tagsMatch) {
-            frontmatter.tags = tagsMatch[1]
-                .split(',')
-                .map(t => t.trim().replace(/["']/g, ''));
-        }
+        if (authorMatch) frontmatter.author = authorMatch[1];
     }
 
     content = content.trim();
@@ -409,7 +405,7 @@ function readPosts() {
                     category: category,
                     title: frontmatter.title || 'Untitled',
                     date: frontmatter.date || '',
-                    tags: frontmatter.tags || [],
+                    author: frontmatter.author || '',
                     content: lazyHtml,
                     toc: toc,
                     excerpt: lazyHtml.replace(/<[^>]*>/g, '').substring(0, 200) + '...',
@@ -544,9 +540,7 @@ function renderPostList(posts, className = '', currentPage = 1) {
                 ${post.category ? `<span class="post-category"><a href="/categories/${post.category}.html">${post.category}</a></span>` : ''}
             </h2>
             <p class="post-excerpt">${post.excerpt}</p>
-            <div class="post-tags">
-                ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-            </div>
+            ${post.author ? `<div class="post-author"><span class="author-badge">👤 ${post.author}</span></div>` : ''}
         </article>
         `;
     });
@@ -616,9 +610,7 @@ function generatePostPages(posts) {
         <article class="post-header">
             ${dateHtml}
             <h1>${post.title}</h1>
-            <div class="post-tags">
-                ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-            </div>
+            ${post.author ? `<div class="post-author"><span class="author-badge">👤 ${post.author}</span></div>` : ''}
         </article>
         <article class="markdown-body post-content">
             ${post.content}
@@ -651,7 +643,7 @@ function generateSearchIndex(posts) {
         slug: post.slug,
         title: post.title,
         date: post.date,
-        tags: post.tags,
+        author: post.author,
         excerpt: post.excerpt,
         // Plain text content for searching
         content: post.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
@@ -732,7 +724,7 @@ function generateSearchPage(posts) {
         slug: p.slug,
         title: p.title,
         date: formatDate(p.date),
-        tags: p.tags,
+        author: p.author,
         excerpt: p.excerpt,
         content: p.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
     })));

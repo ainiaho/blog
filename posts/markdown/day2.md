@@ -1,6 +1,7 @@
 ---
 title: markdown学习2
 date: 2026-04-12 19:30:0
+author: "西南"
 ---
 # markdown学习2
 ## 插入

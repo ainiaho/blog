@@ -1,43 +1,73 @@
 /* =========================================================
- *  Blog Styles — Liquid Glass (Apple VisionOS inspired)
+ *  Blog Styles — Apple System UI Glassmorphism
  * ======================================================= */
 
 :root {
-    /* Liquid Glass Core */
-    --glass-bg: rgba(255, 255, 255, 0.72);
-    --glass-blur: blur(24px);
-    --glass-saturation: saturate(180%);
-    --glass-filter: var(--glass-blur) var(--glass-saturation);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.85);
+    /* Apple Liquid Glass - 全透明玻璃材质 */
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-blur: blur(24px) saturate(200%);
+    --glass-filter: var(--glass-blur);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.4);
     --glass-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.3),
         0 8px 32px rgba(0, 0, 0, 0.08),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
     --glass-shadow-hover:
-        0 12px 40px rgba(0, 0, 0, 0.1),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        0 12px 40px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
     --glass-radius: 20px;
     --glass-radius-sm: 14px;
 
-    /* Accent Colors */
+    /* System Colors */
     --accent: #007aff;
-    --accent-hover: #005ecb;
-    --accent-light: rgba(0, 122, 255, 0.08);
+    --accent-hover: #0056b3;
+    --accent-light: rgba(0, 122, 255, 0.12);
 
-    /* Text Colors (darkened for glass contrast) */
-    --text-primary: #1a1a1a;
-    --text-secondary: #555555;
-    --text-tertiary: #888888;
+    /* System Gray Palette */
+    --gray1: #8e8e93;
+    --gray2: #636366;
+    --gray3: #48484a;
+    --gray4: #3a3a3c;
+    --gray5: #2c2c2e;
+    --gray6: #1c1c1e;
+
+    /* Text Colors */
+    --text-primary: #1d1d1f;
+    --text-secondary: #636366;
+    --text-tertiary: #8e8e93;
 
     --max-width: 960px;
-    --transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --transition: all 0.2s ease;
 
     /* 页面转场 */
-    --page-transition-duration: 320ms;
-    --page-transition-bg: rgba(255, 255, 255, 0.92);
+    --page-transition-duration: 300ms;
+    --page-transition-bg: rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================================
+   Dark Mode — Apple Dark Mode
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Dark Mode Liquid Glass */
+        --glass-bg: rgba(20, 20, 25, 0.35);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.15);
+        --glass-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        --glass-shadow-hover:
+            0 0 0 1px rgba(255, 255, 255, 0.18),
+            0 12px 40px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+        --text-primary: #f5f5f7;
+        --text-secondary: #a1a1a6;
+        --text-tertiary: #636366;
+
+        --page-transition-bg: rgba(0, 0, 0, 0.75);
+    }
 }
 
 /* ============================================================
@@ -104,33 +134,26 @@ body.page-fade-out {
 html { scroll-behavior: smooth; }
 
 /* ============================================================
-   BODY — 自定义背景（支持图片或渐变）
+   BODY — Apple System Background
    ============================================================ */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
-                 "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, -apple-system, BlinkMacSystemFont, 
+                 "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 15px;
-    line-height: 1.6;
+    line-height: 1.5;
     color: var(--text-primary);
-    /* 默认背景色 */
-    background-color: #f2f2f7;
-    /* 如需自定义背景图片，取消注释并修改路径：
-    background-image: url('/assets/background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    */
-    /* 默认渐变背景（如需去除，注释掉即可） */
-    background-image:
-        radial-gradient(ellipse at 10% 15%, rgba(120, 180, 255, 0.35) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 25%, rgba(255, 140, 180, 0.3) 0%, transparent 45%),
-        radial-gradient(ellipse at 30% 75%, rgba(180, 130, 255, 0.25) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 85%, rgba(100, 200, 255, 0.25) 0%, transparent 45%);
+    background-color: #fafafa;
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+/* Dark Mode Body */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1c1c1e;
+    }
+}
 /* ---------- Layout ---------- */
 .page-wrapper {
     display: flex;
@@ -158,17 +181,73 @@ body {
 }
 
 /* ============================================================
-   HEADER — 玻璃导航
+   HEADER — Apple Navigation Bar
    ============================================================ */
 .site-header {
-    background: rgba(255, 255, 255, 0.75);
+    background: var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-filter);
     backdrop-filter: var(--glass-filter);
-    height: 52px;
+    height: 44px;
     position: sticky;
     top: 0;
     z-index: 1030;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+    .site-header {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .site-footer {
+        border-top-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .post-category a {
+        background: rgba(0, 122, 255, 0.15);
+    }
+
+    .author-badge {
+        background: rgba(0, 122, 255, 0.15);
+        border-color: rgba(0, 122, 255, 0.25);
+    }
+
+    .pagination-btn:hover:not(.disabled):not(.active) {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .pagination-btn.active {
+        background: rgba(0, 122, 255, 0.15);
+    }
+
+    .search-input {
+        background: rgba(30, 30, 35, 0.6);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .search-input:focus {
+        background: rgba(30, 30, 35, 0.7);
+    }
+
+    .search-result-item {
+        background: rgba(30, 30, 35, 0.6);
+    }
+
+    .search-result-item:hover {
+        background: rgba(30, 30, 35, 0.75);
+    }
+
+    .share-btn {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .share-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
 }
 
 .site-header .container {
@@ -197,22 +276,22 @@ body {
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 4px;
+    gap: 2px;
 }
 
 .nav-links a {
     display: inline-block;
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 400;
+    font-size: 13px;
+    font-weight: 500;
     padding: 6px 12px;
-    border-radius: 10px;
+    border-radius: 6px;
     transition: var(--transition);
 }
 .nav-links a:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 /* ============================================================
@@ -257,9 +336,7 @@ body {
     position: relative;
 }
 .sidebar-card:hover {
-    background: rgba(255, 255, 255, 0.8);
     box-shadow: var(--glass-shadow-hover);
-    transform: translateY(-2px);
 }
 
 .sidebar-avatar {
@@ -302,7 +379,7 @@ body {
     align-items: center;
     gap: 6px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .sidebar-links {
@@ -333,8 +410,8 @@ body {
 
 .category-list .sidebar-link:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .category-list .sidebar-link.hidden {
@@ -376,8 +453,8 @@ body {
 }
 .sidebar-link:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 .sidebar-link.telegram {
     color: #2AABEE;
@@ -395,7 +472,7 @@ body {
 .post-list {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .post-item {
@@ -403,16 +480,14 @@ body {
     -webkit-backdrop-filter: var(--glass-filter);
     backdrop-filter: var(--glass-filter);
     border-radius: var(--glass-radius);
-    padding: 20px 24px;
+    padding: 16px 20px;
     border: var(--glass-border);
     box-shadow: var(--glass-shadow);
     transition: var(--transition);
     position: relative;
 }
 .post-item:hover {
-    background: rgba(255, 255, 255, 0.82);
     box-shadow: var(--glass-shadow-hover);
-    transform: translateY(-2px);
 }
 
 .post-meta {
@@ -443,21 +518,22 @@ body {
 
 .post-category {
     display: inline-block;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 600;
     flex-shrink: 0;
+    letter-spacing: 0.02em;
 }
 .post-category a {
     display: inline-block;
-    padding: 2px 10px;
-    background: rgba(0, 122, 255, 0.08);
+    padding: 3px 10px;
+    background: var(--accent-light);
     color: var(--accent);
-    border-radius: 10px;
+    border-radius: 12px;
     text-decoration: none;
     transition: var(--transition);
 }
 .post-category a:hover {
-    background: rgba(0, 122, 255, 0.15);
+    background: rgba(0, 122, 255, 0.18);
 }
 
 .post-excerpt {
@@ -467,28 +543,23 @@ body {
     line-height: 1.67;
 }
 
-/* 标签 — 玻璃风格 */
-.post-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-.tag {
+/* 作者徽章 */
+.post-author {
     display: inline-block;
-    background: rgba(255, 255, 255, 0.5);
-    color: var(--text-secondary);
-    padding: 2px 10px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    margin-top: 4px;
+}
+
+.author-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 122, 255, 0.08);
+    color: var(--accent);
+    padding: 3px 12px;
+    border-radius: 12px;
     font-size: 12px;
     font-weight: 500;
-    text-decoration: none;
-    transition: var(--transition);
-}
-.tag:hover {
-    background: var(--accent-light);
-    color: var(--accent);
-    border-color: rgba(0, 122, 255, 0.2);
+    border: 1px solid rgba(0, 122, 255, 0.15);
 }
 
 /* ============================================================
@@ -519,30 +590,17 @@ body {
     border-radius: var(--glass-radius);
     padding: 16px 0;
     border: var(--glass-border);
+    border-right: none;
     box-shadow: var(--glass-shadow);
     max-height: calc(100vh - 100px);
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-width: none;
 }
 
-/* 自定义滚动条 */
 .toc-nav::-webkit-scrollbar {
-    width: 4px;
-}
-
-.toc-nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.toc-nav::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 2px;
-}
-
-.toc-nav::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
+    width: 0;
+    display: none;
 }
 
 .toc-title {
@@ -550,7 +608,7 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     padding: 0 16px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     margin-bottom: 6px;
 }
 
@@ -568,7 +626,6 @@ body {
     font-size: 13px;
     color: var(--text-secondary);
     text-decoration: none;
-    border-left: 2px solid transparent;
     transition: var(--transition);
     line-height: 1.5;
     word-break: break-all;
@@ -580,7 +637,6 @@ body {
 
 .toc-item.active a {
     color: var(--accent);
-    border-left-color: var(--accent);
     background: var(--accent-light);
     font-weight: 500;
 }
@@ -675,8 +731,8 @@ body {
     font-size: 13px;
     font-weight: 500;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.3);
     color: var(--text-secondary);
     text-decoration: none;
     cursor: pointer;
@@ -700,8 +756,8 @@ body {
 }
 
 .copy-link-btn.copied {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.4);
     color: #1a7f37;
 }
 
@@ -835,9 +891,7 @@ body {
     gap: 14px;
 }
 .archive-item:hover {
-    background: rgba(255, 255, 255, 0.82);
     box-shadow: var(--glass-shadow-hover);
-    transform: translateY(-1px);
 }
 
 .archive-item a {
@@ -860,10 +914,10 @@ body {
    FOOTER
    ============================================================ */
 .site-footer {
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-filter);
     backdrop-filter: var(--glass-filter);
-    border-top: 1px solid rgba(255, 255, 255, 0.7);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
     color: var(--text-tertiary);
     padding: 20px 16px;
     margin-top: 0;
@@ -872,7 +926,7 @@ body {
     max-width: var(--max-width);
     margin: 0 auto;
     text-align: center;
-    font-size: 13px;
+    font-size: 12px;
 }
 .site-footer a {
     color: var(--text-secondary);
@@ -1194,9 +1248,9 @@ body {
     width: 100%;
     padding: 12px 36px 12px 40px;
     font-size: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: var(--glass-radius-sm);
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.3);
     color: var(--text-primary);
     outline: none;
     transition: var(--transition);
@@ -1205,7 +1259,7 @@ body {
 
 .search-input:focus {
     border-color: rgba(0, 122, 255, 0.4);
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.4);
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
@@ -1248,23 +1302,23 @@ body {
     color: var(--text-secondary);
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .search-result-item {
     display: block;
     padding: 14px;
     margin-bottom: 8px;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.25);
     border-radius: var(--glass-radius-sm);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     text-decoration: none;
     transition: var(--transition);
 }
 
 .search-result-item:hover {
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .search-result-title {

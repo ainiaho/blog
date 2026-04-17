@@ -1,37 +1,58 @@
 /* =========================================================
- *  Mobile Styles — 手机端专用
+ *  Mobile Styles — Apple iOS Style
  * ======================================================= */
 
 :root {
     --glass-bg: rgba(255, 255, 255, 0.72);
-    --glass-blur: blur(24px);
+    --glass-blur: blur(20px);
     --glass-saturation: saturate(180%);
     --glass-filter: var(--glass-blur) var(--glass-saturation);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.85);
+    --glass-border: 1px solid rgba(0, 0, 0, 0.06);
     --glass-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        0 12px 40px rgba(0, 0, 0, 0.06);
     --glass-shadow-hover:
-        0 12px 40px rgba(0, 0, 0, 0.1),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.3);
-    --glass-radius: 16px;
-    --glass-radius-sm: 12px;
+        0 0 0 1px rgba(255, 255, 255, 0.6),
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        0 16px 48px rgba(0, 0, 0, 0.08);
+    --glass-radius: 12px;
+    --glass-radius-sm: 8px;
 
     --accent: #007aff;
-    --accent-hover: #005ecb;
-    --accent-light: rgba(0, 122, 255, 0.08);
+    --accent-hover: #0056b3;
+    --accent-light: rgba(0, 122, 255, 0.12);
 
-    --text-primary: #1a1a1a;
-    --text-secondary: #555555;
-    --text-tertiary: #888888;
+    --text-primary: #1d1d1f;
+    --text-secondary: #636366;
+    --text-tertiary: #8e8e93;
 
-    /* 页面转场 */
-    --page-transition-duration: 320ms;
-    --page-transition-bg: rgba(255, 255, 255, 0.92);
+    --page-transition-duration: 300ms;
+    --page-transition-bg: rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================================
+   Dark Mode — Apple Dark Mode
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --glass-bg: rgba(30, 30, 30, 0.72);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+        --glass-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.08),
+            0 2px 8px rgba(0, 0, 0, 0.3),
+            0 12px 40px rgba(0, 0, 0, 0.4);
+        --glass-shadow-hover:
+            0 0 0 1px rgba(255, 255, 255, 0.12),
+            0 4px 12px rgba(0, 0, 0, 0.4),
+            0 16px 48px rgba(0, 0, 0, 0.5);
+
+        --text-primary: #f5f5f7;
+        --text-secondary: #a1a1a6;
+        --text-tertiary: #636366;
+
+        --page-transition-bg: rgba(30, 30, 30, 0.85);
+    }
 }
 
 /* ============================================================
@@ -98,20 +119,23 @@ body.page-fade-out {
 html { scroll-behavior: smooth; }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
-                 "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, -apple-system, 
+                 "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.5;
     color: var(--text-primary);
-    background-color: #f2f2f7;
-    background-image:
-        radial-gradient(ellipse at 10% 15%, rgba(120, 180, 255, 0.35) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 25%, rgba(255, 140, 180, 0.3) 0%, transparent 45%),
-        radial-gradient(ellipse at 30% 75%, rgba(180, 130, 255, 0.25) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 85%, rgba(100, 200, 255, 0.25) 0%, transparent 45%);
+    background-color: #f5f5f7;
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Dark Mode Body */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #000000;
+    }
 }
 
 /* ---------- Layout ---------- */
@@ -122,17 +146,73 @@ body {
 }
 
 /* ============================================================
-   HEADER — 移动端导航
+   HEADER — Apple Navigation Bar
    ============================================================ */
 .site-header {
-    background: rgba(255, 255, 255, 0.8);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    backdrop-filter: blur(20px) saturate(180%);
-    height: 48px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    height: 44px;
     position: sticky;
     top: 0;
     z-index: 1030;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+    .site-header {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .site-footer {
+        border-top-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .post-category a {
+        background: rgba(0, 122, 255, 0.15);
+    }
+
+    .author-badge {
+        background: rgba(0, 122, 255, 0.15);
+        border-color: rgba(0, 122, 255, 0.25);
+    }
+
+    .pagination-btn:hover:not(.disabled):not(.active) {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .pagination-btn.active {
+        background: rgba(0, 122, 255, 0.15);
+    }
+
+    .search-input {
+        background: rgba(30, 30, 30, 0.6);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .search-input:focus {
+        background: rgba(30, 30, 30, 0.7);
+    }
+
+    .search-result-item {
+        background: rgba(30, 30, 30, 0.6);
+    }
+
+    .search-result-item:hover {
+        background: rgba(30, 30, 30, 0.75);
+    }
+
+    .share-btn {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .share-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
 }
 
 .site-header .container {
@@ -233,7 +313,7 @@ body {
     color: var(--text-primary);
     margin-bottom: 10px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .sidebar-link,
@@ -343,21 +423,23 @@ body {
     overflow: hidden;
 }
 
-.post-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+/* 作者徽章 */
+.post-author {
+    display: inline-block;
+    margin-top: 4px;
 }
 
-.tag {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.5);
-    color: var(--text-secondary);
-    padding: 2px 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+.author-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 122, 255, 0.08);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 10px;
     font-size: 11px;
-    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid rgba(0, 122, 255, 0.15);
 }
 
 .home-main {
@@ -427,6 +509,7 @@ body {
     border-radius: var(--glass-radius);
     padding: 12px 0;
     border: var(--glass-border);
+    border-right: none;
     box-shadow: var(--glass-shadow);
 }
 
@@ -435,7 +518,7 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     padding: 0 12px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
     margin-bottom: 4px;
 }
 
@@ -451,13 +534,11 @@ body {
     font-size: 12px;
     color: var(--text-secondary);
     text-decoration: none;
-    border-left: 2px solid transparent;
     transition: all 0.2s;
 }
 
 .toc-item.active a {
     color: var(--accent);
-    border-left-color: var(--accent);
     background: var(--accent-light);
 }
 
@@ -697,8 +778,8 @@ body {
     font-size: 12px;
     font-weight: 500;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.3);
     color: var(--text-secondary);
     text-decoration: none;
     cursor: pointer;
@@ -909,9 +990,9 @@ body {
     width: 100%;
     padding: 10px 32px 10px 32px;
     font-size: 13px;
-    border: 1px solid rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: var(--glass-radius-sm);
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.3);
     color: var(--text-primary);
     outline: none;
     transition: all 0.2s;
@@ -957,9 +1038,9 @@ body {
     display: block;
     padding: 12px;
     margin-bottom: 6px;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.25);
     border-radius: var(--glass-radius-sm);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     text-decoration: none;
 }
 
@@ -1006,10 +1087,10 @@ body {
    FOOTER
    ============================================================ */
 .site-footer {
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-filter);
     backdrop-filter: var(--glass-filter);
-    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
     color: var(--text-tertiary);
     padding: 14px 12px;
     margin-top: 0;
