@@ -764,48 +764,107 @@ function generate404() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - 页面未找到</title>
-    <link rel="stylesheet" href="/assets/style.css">
+    <title>404 - ???</title>
     <style>
-        .error-page {
+        :root {
+            --primary: #6c5ce7;
+            --bg-gradient: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 80vh;
+            background: var(--bg-gradient);
+            overflow: hidden;
+        }
+
+        /* ??????? */
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite linear;
+            z-index: 0;
+        }
+
+        /* ???? - ????? */
+        .glass-card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 50px 80px;
             text-align: center;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.1);
+            color: white;
+            max-width: 500px;
         }
-        .error-code { font-size: 80px; font-weight: 800; color: var(--accent); margin-bottom: 0; line-height: 1; }
-        .error-msg { font-size: 20px; color: var(--text-secondary); margin-bottom: 30px; }
-        .error-btn {
-            display: inline-block;
-            padding: 10px 24px;
-            background: var(--accent);
-            color: #fff;
+
+        h1 {
+            font-size: 10rem;
+            margin: 0;
+            background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin: 20px 0 40px;
+            letter-spacing: 2px;
+            opacity: 0.9;
+        }
+
+        .btn {
+            padding: 12px 35px;
+            background: #fff;
+            color: #3f2b96;
             text-decoration: none;
-            border-radius: 20px;
-            font-weight: 600;
-            transition: var(--transition);
+            border-radius: 50px;
+            font-weight: bold;
+            transition: 0.3s transform ease;
+            display: inline-block;
         }
-        .error-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* ??????? */
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(100px, 100px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @media (max-width: 480px) {
+            .glass-card { padding: 40px 20px; width: 80%; }
+            h1 { font-size: 6rem; }
+        }
     </style>
 </head>
 <body>
-    <div class="page-wrapper">
-        <header class="site-header">
-            <div class="container">
-                <nav><ul class="nav-links"><li><a href="/index.html">首页</a></li></ul></nav>
-            </div>
-        </header>
-        <div class="error-page">
-            <div class="error-code">404</div>
-            <div class="error-msg">页面未找到 / Page Not Found</div>
-            <a href="/index.html" class="error-btn">返回首页</a>
-        </div>
-        <footer class="site-footer"><div class="container"><p>使用静态博客生成器构建 &copy; 2026</p></div></footer>
+    <div class="circle" style="width: 200px; height: 200px; top: 10%; left: 10%;"></div>
+    <div class="circle" style="width: 300px; height: 300px; bottom: 5%; right: 5%; animation-duration: 30s;"></div>
+
+    <div class="glass-card">
+        <h1>404</h1>
+        <p>你来到了未知的荒原</p>
+        <a href="/" class="btn">带星野回家</a>
     </div>
 </body>
-</html>`;
+</html>
+ `;
     fs.writeFileSync(path.join(OUTPUT_DIR, '404.html'), html);
     console.log('Generated: 404.html');
 }
