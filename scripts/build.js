@@ -1216,6 +1216,13 @@ function build() {
     generateSitemap(posts);
     generateFeed(posts);
 
+    // Copy .well-known (SSL domain validation, etc.) to output
+    const wellKnownSrc = path.join(__dirname, '..', '.well-known');
+    if (fs.existsSync(wellKnownSrc)) {
+        const wellKnownDst = path.join(OUTPUT_DIR, '.well-known');
+        fs.cpSync(wellKnownSrc, wellKnownDst, { recursive: true });
+    }
+
     console.log('\nBuild complete! Output directory: output/');
 }
 
