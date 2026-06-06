@@ -66,6 +66,13 @@
             </main>
         </div>
 
+        <div id="mobile-toc-wrapper">
+            <div id="mobile-toc-content">
+                {{TOC}}
+            </div>
+            <button id="mobile-toc-toggle" aria-label="目录">目录</button>
+        </div>
+
         <footer class="site-footer">
             <div class="container">
                 <p>使用静态博客生成器构建 &copy; 2026</p>
@@ -387,6 +394,25 @@
                 var next = current === 'dark' ? 'light' : 'dark';
                 setTheme(next);
                 localStorage.setItem('theme', next);
+            });
+        }
+    })();
+
+    // Mobile TOC toggle
+    (function(){
+        var wrapper = document.getElementById('mobile-toc-wrapper');
+        var toggle = document.getElementById('mobile-toc-toggle');
+        if (wrapper && toggle) {
+            toggle.addEventListener('click', function(){
+                wrapper.classList.toggle('open');
+                toggle.textContent = wrapper.classList.contains('open') ? '收起目录' : '目录';
+            });
+            // 点击链接后自动收起
+            wrapper.addEventListener('click', function(e){
+                if (e.target.closest('a')) {
+                    wrapper.classList.remove('open');
+                    toggle.textContent = '目录';
+                }
             });
         }
     })();
