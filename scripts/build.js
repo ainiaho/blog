@@ -867,14 +867,14 @@ function getSidebarTagList(posts) {
     const entries = Object.entries(tagMap).sort((a, b) => b[1] - a[1]);
     if (entries.length === 0) return '';
 
-    const MAX_VISIBLE = 8;
+    const MAX_VISIBLE = 4;
     const hasMore = entries.length > MAX_VISIBLE;
 
-    let html = '<div class="sidebar-card"><div class="sidebar-card-title">热门标签</div><div class="tag-list-sidebar">';
+    let html = '<div class="sidebar-card"><div class="sidebar-card-title">热门标签</div><div class="category-list">';
 
     entries.forEach(([tag, count], index) => {
         const isHidden = index >= MAX_VISIBLE ? ' hidden' : '';
-        html += `<a href="/tags/${encodeURIComponent(tag)}.html" class="sidebar-link${isHidden}"><span class="tag">#${tag}</span> (${count})</a>`;
+        html += `<a href="/tags/${encodeURIComponent(tag)}.html" class="sidebar-link${isHidden}">${tag} (${count})</a>`;
     });
 
     if (hasMore) {
