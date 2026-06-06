@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 const { marked } = require('marked');
+const footnote = require('marked-footnote');
+const alert = require('marked-alert');
 
 // Directories
 const POSTS_DIR = path.join(__dirname, '..', 'posts');
@@ -267,6 +269,8 @@ renderer.code = function(options) {
 };
 
 // Marked configuration
+marked.use(footnote());
+marked.use(alert());
 const markedOptions = {
     gfm: true,
     breaks: true,

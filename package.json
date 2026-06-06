@@ -11,6 +11,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "marked": "^18.0.0"
+    "marked": "^18.0.0",
+    "marked-alert": "^2.1.2",
+    "marked-footnote": "^1.4.0"
   }
 }

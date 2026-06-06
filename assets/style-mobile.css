@@ -679,6 +679,30 @@ body {
     border-radius: 6px !important;
 }
 
+/* Task list checkboxes */
+.markdown-body .task-list-item {
+    list-style: none;
+}
+.markdown-body .task-list-item input[type="checkbox"] {
+    margin-right: 6px;
+    vertical-align: middle;
+    accent-color: var(--accent);
+}
+
+/* Footnotes */
+.markdown-body .footnotes {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px solid var(--border-color, rgba(0,0,0,0.1));
+    font-size: 14px;
+}
+.markdown-body .footnotes ol {
+    padding-left: 1.2em;
+}
+.markdown-body .footnotes p {
+    margin: 0;
+}
+
 /* ============================================================
    代码语法高亮
    ============================================================ */
