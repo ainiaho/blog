@@ -254,6 +254,12 @@ renderer.code = function(options) {
         lang = arguments[1];
     }
 
+    // Mermaid diagrams — render as <pre class="mermaid"> for JS library
+    if (lang === 'mermaid') {
+        const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<pre class="mermaid">${escaped}</pre>`;
+    }
+
     const langAttr = lang ? ` data-lang="${lang}"` : '';
     const highlighted = highlightCode(code, lang);
 

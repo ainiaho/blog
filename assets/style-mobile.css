@@ -1368,3 +1368,17 @@ body {
 .home-layout .home-sidebar.expanded .sidebar-card {
     display: block;
 }
+
+/* =========================================================
+ *  Mermaid diagram
+ * ======================================================= */
+.mermaid {
+    display: flex;
+    justify-content: center;
+    margin: 1.5em 0;
+    overflow-x: auto;
+}
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
+}
