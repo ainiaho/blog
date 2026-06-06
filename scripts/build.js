@@ -281,10 +281,29 @@ function parseMarkdown(md) {
         const titleMatch = frontmatterStr.match(/^title:\s*["'](.+?)["']/m);
         const dateMatch = frontmatterStr.match(/^date:\s*(.+)$/m);
         const authorMatch = frontmatterStr.match(/^author:\s*["'](.+?)["']/m);
+        const descMatch = frontmatterStr.match(/^description:\s*["'](.+?)["']/m);
+        const seriesMatch = frontmatterStr.match(/^series:\s*["'](.+?)["']/m);
+        const orderMatch = frontmatterStr.match(/^order:\s*(\d+)/m);
+
+        // Tags: support YAML array ["a","b"] or comma-separated list
+        let tags = [];
+        const tagsMatch = frontmatterStr.match(/^tags:\s*\[([\s\S]*?)\]/m);
+        if (tagsMatch) {
+            tags = tagsMatch[1].split(',').map(t => t.trim().replace(/["']/g, '')).filter(Boolean);
+        } else {
+            const tagsLine = frontmatterStr.match(/^tags:\s*(.+)$/m);
+            if (tagsLine) {
+                tags = tagsLine[1].split(',').map(t => t.trim().replace(/["']/g, '')).filter(Boolean);
+            }
+        }
 
         if (titleMatch) frontmatter.title = titleMatch[1];
         if (dateMatch) frontmatter.date = dateMatch[1].trim();
         if (authorMatch) frontmatter.author = authorMatch[1];
+        if (descMatch) frontmatter.description = descMatch[1];
+        if (seriesMatch) frontmatter.series = seriesMatch[1];
+        if (orderMatch) frontmatter.order = parseInt(orderMatch[1], 10);
+        frontmatter.tags = tags;
     }
 
     content = content.trim();
@@ -352,6 +371,15 @@ function generateSlug(filename) {
     return filename.replace(/\.md$/, '');
 }
 
+// Estimate reading time
+function estimateReadingTime(html) {
+    const text = html.replace(/<[^>]*>/g, '');
+    const cjkChars = (text.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/g) || []).length;
+    const words = text.replace(/[\u4e00-\u9fff]/g, '').split(/\s+/).filter(Boolean).length;
+    const minutes = Math.ceil(cjkChars / 500 + words / 200);
+    return Math.max(1, minutes);
+}
+
 // Clean output directory
 function cleanOutput() {
     if (fs.existsSync(OUTPUT_DIR)) {
@@ -399,6 +427,8 @@ function readPosts() {
                 // Add lazy loading to images (Zero Dependency Optimization)
                 const lazyHtml = html.replace(/<img /g, '<img loading="lazy" ');
 
+                const readingTime = estimateReadingTime(lazyHtml);
+
                 posts.push({
                     slug: urlSlug,
                     filename: entry.name,
@@ -406,10 +436,14 @@ function readPosts() {
                     title: frontmatter.title || 'Untitled',
                     date: frontmatter.date || '',
                     author: frontmatter.author || '',
+                    tags: frontmatter.tags || [],
+                    series: frontmatter.series || '',
+                    order: frontmatter.order || 0,
                     content: lazyHtml,
                     toc: toc,
                     excerpt: lazyHtml.replace(/<[^>]*>/g, '').substring(0, 200) + '...',
-                    description: frontmatter.description || lazyHtml.replace(/<[^>]*>/g, '').substring(0, 160).trim()
+                    description: frontmatter.description || lazyHtml.replace(/<[^>]*>/g, '').substring(0, 160).trim(),
+                    readingTime: readingTime
                 });
             }
         });
@@ -433,6 +467,12 @@ function generateHomepage(posts, page = 1) {
         renderPostList(posts, '');
         const html = renderTemplate(layoutTemplate, {
             TITLE: '西南',
+            META_DESC: '西南的个人博客',
+            OG_TITLE: '西南',
+            OG_DESC: '西南的个人博客',
+            OG_URL: '/',
+            OG_IMAGE: '/assets/avatar.jpg',
+            OG_TYPE: 'website',
             SIDEBAR: renderSidebar(posts),
             CONTENT: renderPostList(posts, ''),
             PAGINATION: ''
@@ -478,6 +518,12 @@ function generateHomepage(posts, page = 1) {
 
     const html = renderTemplate(layoutTemplate, {
         TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
+        META_DESC: '西南的个人博客',
+        OG_TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
+        OG_DESC: '西南的个人博客',
+        OG_URL: page === 1 ? '/' : `/page/${page}.html`,
+        OG_IMAGE: '/assets/avatar.jpg',
+        OG_TYPE: 'website',
         SIDEBAR: renderSidebar(posts),
         CONTENT: content,
         PAGINATION: pagination
@@ -500,11 +546,12 @@ function generateHomepage(posts, page = 1) {
 // Render homepage sidebar
 function renderSidebar(posts) {
     const categoryHtml = getCategoryList(posts);
+    const tagHtml = getSidebarTagList(posts);
     
     return `
 <div class="sidebar-card">
     <div class="sidebar-avatar">
-        <img src="/assets/avatar.jpg" alt="头像" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e8e8e8%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%238590a6%22 font-size=%2240%22>👤</text></svg>'">
+        <img src="/assets/avatar.jpg" alt="头像" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e8e8e8%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%238590a6%22 font-size=%2240%22>?</text></svg>'">
     </div>
     <div class="sidebar-bio">
         <p class="sidebar-name">西南</p>
@@ -513,11 +560,14 @@ function renderSidebar(posts) {
 </div>
 
 ${categoryHtml}
+${tagHtml}
 
 <div class="sidebar-card">
     <div class="sidebar-card-title">快速导航</div>
     <div class="sidebar-links">
-        <a href="/search.html" class="sidebar-link">🔍 搜索文章</a>
+        <a href="/search.html" class="sidebar-link">搜索文章</a>
+        <a href="/tags/index.html" class="sidebar-link">标签云</a>
+        <a href="/feed.xml" class="sidebar-link">订阅(RSS)</a>
     </div>
 </div>
 `;
@@ -530,7 +580,12 @@ function renderPostList(posts, className = '', currentPage = 1) {
     posts.forEach(post => {
         const metaParts = [];
         if (post.date) metaParts.push(formatDate(post.date));
+        if (post.readingTime) metaParts.push(`${post.readingTime} 分钟`);
         const metaHtml = metaParts.length > 0 ? `<div class="post-meta">${metaParts.join(' · ')}</div>` : '';
+
+        const tagsHtml = post.tags && post.tags.length > 0
+            ? `<div class="post-tags">${post.tags.map(t => `<a class="tag" href="/tags/${encodeURIComponent(t)}.html">#${t}</a>`).join('')}</div>`
+            : '';
 
         html += `
         <article class="post-item">
@@ -539,8 +594,9 @@ function renderPostList(posts, className = '', currentPage = 1) {
                 <a href="/posts/${post.slug}.html">${post.title}</a>
                 ${post.category ? `<span class="post-category"><a href="/categories/${post.category}.html">${post.category}</a></span>` : ''}
             </h2>
+            ${tagsHtml}
             <p class="post-excerpt">${post.excerpt}</p>
-            ${post.author ? `<div class="post-author"><span class="author-badge">👤 ${post.author}</span></div>` : ''}
+            ${post.author ? `<div class="post-author"><span class="author-badge">${post.author}</span></div>` : ''}
         </article>
         `;
     });
@@ -570,6 +626,52 @@ function generatePaginationPages(posts) {
     console.log(`Generated ${totalPages} pagination pages`);
 }
 
+// Find related posts (same category first, then same tags)
+function findRelatedPosts(currentPost, allPosts, maxCount = 3) {
+    const scored = allPosts
+        .filter(p => p.slug !== currentPost.slug)
+        .map(p => {
+            let score = 0;
+            if (p.category && p.category === currentPost.category) score += 3;
+            if (currentPost.tags && p.tags) {
+                const common = currentPost.tags.filter(t => p.tags.includes(t));
+                score += common.length;
+            }
+            return { post: p, score };
+        })
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, maxCount);
+
+    // Fallback: if no related, return latest posts
+    if (scored.length === 0) {
+        return allPosts.filter(p => p.slug !== currentPost.slug).slice(0, maxCount);
+    }
+    return scored.map(s => s.post);
+}
+
+// Get series navigation HTML
+function getSeriesHtml(post, allPosts) {
+    if (!post.series) return '';
+    const seriesPosts = allPosts
+        .filter(p => p.series === post.series)
+        .sort((a, b) => a.order - b.order);
+    if (seriesPosts.length === 0) return '';
+
+    const currentIdx = seriesPosts.findIndex(p => p.slug === post.slug);
+    if (currentIdx === -1) return '';
+
+    let html = `<div class="series-banner"><div class="series-banner-title">系列：${post.series}</div>`;
+    html += `<div class="series-progress">第 ${currentIdx + 1} / ${seriesPosts.length} 篇</div>`;
+    html += `<ul class="series-list">`;
+    seriesPosts.forEach((sp, i) => {
+        const cls = i === currentIdx ? 'active' : '';
+        html += `<li class="${cls}"><a href="/posts/${sp.slug}.html">${sp.title}</a></li>`;
+    });
+    html += `</ul></div>`;
+    return html;
+}
+
 // Generate individual post pages
 function generatePostPages(posts) {
     // Read article layout template
@@ -579,7 +681,32 @@ function generatePostPages(posts) {
         const prevPost = posts[index + 1];
         const nextPost = posts[index - 1];
 
-        const dateHtml = post.date ? `<div class="post-meta">${formatDate(post.date)}</div>` : '';
+        const metaParts = [];
+        if (post.date) metaParts.push(formatDate(post.date));
+        if (post.readingTime) metaParts.push(`${post.readingTime} 分钟`);
+        const dateHtml = metaParts.length > 0 ? `<div class="post-meta">${metaParts.join(' · ')}</div>` : '';
+
+        // Tags
+        const tagsHtml = post.tags && post.tags.length > 0
+            ? `<div class="article-tags">${post.tags.map(t => `<a class="tag" href="/tags/${encodeURIComponent(t)}.html">#${t}</a>`).join('')}</div>`
+            : '';
+
+        // Series
+        const seriesHtml = getSeriesHtml(post, posts);
+
+        // Related posts
+        const relatedPosts = findRelatedPosts(post, posts);
+        let relatedHtml = '';
+        if (relatedPosts.length > 0) {
+            relatedHtml = '<div class="related-posts"><div class="related-posts-title">相关文章</div><div class="related-posts-list">';
+            relatedPosts.forEach(rp => {
+                relatedHtml += `<a href="/posts/${rp.slug}.html" class="related-post-item">
+                    <div class="related-post-title">${rp.title}</div>
+                    ${rp.date ? `<div class="related-post-date">${formatDate(rp.date)}</div>` : ''}
+                </a>`;
+            });
+            relatedHtml += '</div></div>';
+        }
 
         // Share buttons HTML (URL will be resolved dynamically on page load)
         const shareHtml = `
@@ -610,20 +737,30 @@ function generatePostPages(posts) {
         <article class="post-header">
             ${dateHtml}
             <h1>${post.title}</h1>
-            ${post.author ? `<div class="post-author"><span class="author-badge">👤 ${post.author}</span></div>` : ''}
+            ${tagsHtml}
+            ${post.author ? `<div class="post-author"><span class="author-badge">${post.author}</span></div>` : ''}
         </article>
+        ${seriesHtml}
         <article class="markdown-body post-content">
             ${post.content}
         </article>
         ${shareHtml.replace(/\{\{URL\}\}/g, `/posts/${post.slug}.html`)}
+        ${relatedHtml}
         <nav class="post-nav">
             ${prevPost ? `<a href="/posts/${prevPost.slug}.html">&larr; ${prevPost.title}</a>` : '<span></span>'}
             ${nextPost ? `<a href="/posts/${nextPost.slug}.html">${nextPost.title} &rarr;</a>` : '<span></span>'}
         </nav>
         `;
 
+        const ogDesc = post.description || post.excerpt.replace(/<[^>]*>/g, '').substring(0, 160);
         const html = renderTemplate(articleTemplate, {
             TITLE: post.title + ' - 西南',
+            META_DESC: ogDesc,
+            OG_TITLE: post.title + ' - 西南',
+            OG_DESC: ogDesc,
+            OG_URL: `/posts/${post.slug}.html`,
+            OG_IMAGE: '/assets/avatar.jpg',
+            OG_TYPE: 'article',
             TOC: post.toc,
             CONTENT: content
         });
@@ -644,6 +781,7 @@ function generateSearchIndex(posts) {
         title: post.title,
         date: post.date,
         author: post.author,
+        tags: post.tags || [],
         excerpt: post.excerpt,
         // Plain text content for searching
         content: post.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
@@ -677,9 +815,16 @@ function generateCategoryPages(posts) {
         
         content += renderPostList(categoryPosts, '');
 
+        const desc = `${category} 分类 - ${categoryPosts.length} 篇文章`;
         const html = renderTemplate(categoryTemplate, {
             TITLE: `${category} - 西南`,
-            SIDEBAR: renderSidebar(posts),  // Show sidebar with avatar
+            META_DESC: desc,
+            OG_TITLE: `${category} - 西南`,
+            OG_DESC: desc,
+            OG_URL: `/categories/${category}.html`,
+            OG_IMAGE: '/assets/avatar.jpg',
+            OG_TYPE: 'website',
+            SIDEBAR: renderSidebar(posts),
             CONTENT: content,
             PAGINATION: ''
         });
@@ -704,7 +849,7 @@ function getCategoryList(posts) {
     categories.forEach((category, index) => {
         const count = posts.filter(p => p.category === category).length;
         const isHidden = index >= MAX_VISIBLE ? ' hidden' : '';
-        html += `<a href="/categories/${category}.html" class="sidebar-link${isHidden}">📁 ${category} (${count})</a>`;
+        html += `<a href="/categories/${category}.html" class="sidebar-link${isHidden}">${category} (${count})</a>`;
     });
     
     if (hasMore) {
@@ -716,6 +861,42 @@ function getCategoryList(posts) {
     return html;
 }
 
+// Get sidebar tag list (sorted by count, limited)
+function getSidebarTagList(posts) {
+    const tagMap = collectTags(posts);
+    const entries = Object.entries(tagMap).sort((a, b) => b[1] - a[1]);
+    if (entries.length === 0) return '';
+
+    const MAX_VISIBLE = 8;
+    const hasMore = entries.length > MAX_VISIBLE;
+
+    let html = '<div class="sidebar-card"><div class="sidebar-card-title">热门标签</div><div class="tag-list-sidebar">';
+
+    entries.forEach(([tag, count], index) => {
+        const isHidden = index >= MAX_VISIBLE ? ' hidden' : '';
+        html += `<a href="/tags/${encodeURIComponent(tag)}.html" class="sidebar-link${isHidden}"><span class="tag">#${tag}</span> (${count})</a>`;
+    });
+
+    if (hasMore) {
+        const hiddenCount = entries.length - MAX_VISIBLE;
+        html += `<button class="category-toggle" onclick="this.parentElement.classList.toggle('expanded');this.textContent=this.parentElement.classList.contains('expanded')?'收起':'展开 (+' + ${hiddenCount} + ')';">展开 (+${hiddenCount})</button>`;
+    }
+
+    html += '</div></div>';
+    return html;
+}
+
+// Collect tags from all posts, returns { tagName: count }
+function collectTags(posts) {
+    const tagMap = {};
+    posts.forEach(p => {
+        (p.tags || []).forEach(t => {
+            tagMap[t] = (tagMap[t] || 0) + 1;
+        });
+    });
+    return tagMap;
+}
+
 // Generate search page
 function generateSearchPage(posts) {
     const searchTemplate = fs.readFileSync(path.join(TEMPLATES_DIR, 'search.html'), 'utf-8');
@@ -725,6 +906,7 @@ function generateSearchPage(posts) {
         title: p.title,
         date: formatDate(p.date),
         author: p.author,
+        tags: p.tags || [],
         excerpt: p.excerpt,
         content: p.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
     })));
@@ -749,6 +931,12 @@ function generateSearchPage(posts) {
 
     const html = renderTemplate(searchTemplate, {
         TITLE: '搜索 - 西南',
+        META_DESC: '在博客中搜索文章',
+        OG_TITLE: '搜索 - 西南',
+        OG_DESC: '在博客中搜索文章',
+        OG_URL: '/search.html',
+        OG_IMAGE: '/assets/avatar.jpg',
+        OG_TYPE: 'website',
         CONTENT: content,
         SEARCH_DATA: searchData
     });
@@ -889,6 +1077,113 @@ function generateSitemap(posts) {
     console.log('Generated: sitemap.xml');
 }
 
+// Generate tag pages and tag cloud
+function generateTagPages(posts) {
+    const tagMap = collectTags(posts);
+    const tags = Object.keys(tagMap);
+    if (tags.length === 0) {
+        console.log('No tags found');
+        return;
+    }
+
+    const layout = fs.readFileSync(path.join(TEMPLATES_DIR, 'layout.html'), 'utf-8');
+    const maxCount = Math.max(...Object.values(tagMap), 1);
+
+    // Generate individual tag pages
+    tags.forEach(tag => {
+        const tagPosts = posts.filter(p => p.tags && p.tags.includes(tag));
+        let content = `<div class="category-header">
+            <h1># ${tag}</h1>
+            <p class="category-count">${tagPosts.length} 篇文章</p>
+        </div>\n`;
+        content += renderPostList(tagPosts, '');
+
+        const tagDesc = `标签 ${tag} - ${tagPosts.length} 篇文章`;
+        const html = renderTemplate(layout, {
+            TITLE: `${tag} - 标签 - 西南`,
+            META_DESC: tagDesc,
+            OG_TITLE: `${tag} - 标签 - 西南`,
+            OG_DESC: tagDesc,
+            OG_URL: `/tags/${encodeURIComponent(tag)}.html`,
+            OG_IMAGE: '/assets/avatar.jpg',
+            OG_TYPE: 'website',
+            SIDEBAR: renderSidebar(posts),
+            CONTENT: content,
+            PAGINATION: ''
+        });
+
+        const tagDir = path.join(OUTPUT_DIR, 'tags');
+        fs.mkdirSync(tagDir, { recursive: true });
+        fs.writeFileSync(path.join(tagDir, `${encodeURIComponent(tag)}.html`), html);
+        console.log(`Generated: tags/${tag}.html`);
+    });
+
+    // Generate tag cloud page
+    let cloudContent = `<div class="category-header">
+        <h1>标签云</h1>
+        <p class="category-count">共 ${tags.length} 个标签</p>
+    </div>
+    <div class="tag-cloud">`;
+
+    tags.sort().forEach(tag => {
+        const count = tagMap[tag];
+        const size = 0.8 + (count / maxCount) * 1.2;
+        cloudContent += `<a href="/tags/${encodeURIComponent(tag)}.html" class="tag-cloud-item" style="font-size: ${size}rem;">#${tag} (${count})</a>`;
+    });
+
+    cloudContent += '</div>';
+
+    const cloudHtml = renderTemplate(layout, {
+        TITLE: '标签云 - 西南',
+        META_DESC: `共 ${tags.length} 个标签`,
+        OG_TITLE: '标签云 - 西南',
+        OG_DESC: `共 ${tags.length} 个标签`,
+        OG_URL: '/tags/index.html',
+        OG_IMAGE: '/assets/avatar.jpg',
+        OG_TYPE: 'website',
+        SIDEBAR: renderSidebar(posts),
+        CONTENT: cloudContent,
+        PAGINATION: ''
+    });
+
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'tags', 'index.html'), cloudHtml);
+    console.log('Generated: tags/index.html');
+}
+
+// Generate RSS feed
+function generateFeed(posts) {
+    const baseUrl = 'https://yourdomain.com';
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+    <title>西南</title>
+    <link>${baseUrl}</link>
+    <description>西南的个人博客</description>
+    <language>zh-CN</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
+`;
+
+    const feedPosts = posts.slice(0, 20);
+    feedPosts.forEach(post => {
+        const description = post.excerpt.replace(/<[^>]*>/g, '').substring(0, 500);
+        xml += `    <item>
+        <title>${post.title}</title>
+        <link>${baseUrl}/posts/${post.slug}.html</link>
+        <guid>${baseUrl}/posts/${post.slug}.html</guid>
+        <pubDate>${post.date ? new Date(post.date).toUTCString() : new Date().toUTCString()}</pubDate>
+        <description><![CDATA[${description}]]></description>
+    </item>
+`;
+    });
+
+    xml += `</channel>
+</rss>`;
+
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'feed.xml'), xml);
+    console.log('Generated: feed.xml');
+}
+
 // Main build function
 function build() {
     console.log('Building static blog...\n');
@@ -902,10 +1197,12 @@ function build() {
     generatePaginationPages(posts);
     generatePostPages(posts);
     generateCategoryPages(posts);
+    generateTagPages(posts);
     generateSearchIndex(posts);
     generateSearchPage(posts);
     generate404();
     generateSitemap(posts);
+    generateFeed(posts);
 
     console.log('\nBuild complete! Output directory: output/');
 }

@@ -4,7 +4,7 @@
   "description": "Personal static blog",
   "scripts": {
     "build": "node scripts/build.js",
-    "dev": "node scripts/build.js && npx serve output"
+    "dev": "python3 dev-server.py 3000"
   },
   "keywords": [],
   "author": "",

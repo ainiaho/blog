@@ -1084,6 +1084,256 @@ body {
 }
 
 /* ============================================================
+   标签徽章
+   ============================================================ */
+.tag {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    border-radius: 8px;
+    text-decoration: none;
+}
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+.article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+.tag-list-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.tag-list-sidebar .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 8px;
+}
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    border-radius: var(--glass-radius);
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+.tag-cloud-item {
+    display: inline-block;
+    padding: 6px 12px;
+    color: var(--accent);
+    background: var(--accent-light);
+    border-radius: 16px;
+    text-decoration: none;
+}
+
+/* ============================================================
+   系列文章横幅
+   ============================================================ */
+.series-banner {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    border-radius: var(--glass-radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+.series-banner-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.series-progress {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+.series-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.series-list li a {
+    display: block;
+    padding: 5px 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 6px;
+}
+.series-list li.active a {
+    color: var(--accent);
+    background: var(--accent-light);
+    font-weight: 500;
+}
+
+/* ============================================================
+   相关文章
+   ============================================================ */
+.related-posts {
+    margin-top: 14px;
+    padding: 14px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    border-radius: var(--glass-radius-sm);
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+.related-posts-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+.related-posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.related-post-item {
+    display: block;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.related-post-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+.related-post-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* ============================================================
+   回到顶部按钮
+   ============================================================ */
+.back-to-top {
+    position: fixed;
+    bottom: 24px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+.back-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.back-to-top:hover {
+    color: var(--accent);
+}
+
+/* ============================================================
+   主题切换按钮
+   ============================================================ */
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+}
+
+/* ============================================================
+   暗色模式 (data-theme 手动切换)
+   ============================================================ */
+[data-theme="dark"] body {
+    background-color: #000000;
+}
+[data-theme="dark"] .site-header {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .site-footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .nav-links a:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .post-category a {
+    background: rgba(0, 122, 255, 0.15);
+}
+[data-theme="dark"] .author-badge {
+    background: rgba(0, 122, 255, 0.15);
+    border-color: rgba(0, 122, 255, 0.25);
+}
+[data-theme="dark"] .pagination-btn:hover:not(.disabled):not(.active) {
+    background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .pagination-btn.active {
+    background: rgba(0, 122, 255, 0.15);
+}
+[data-theme="dark"] .search-input {
+    background: rgba(30, 30, 30, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .search-input:focus {
+    background: rgba(30, 30, 30, 0.7);
+}
+[data-theme="dark"] .search-result-item {
+    background: rgba(30, 30, 30, 0.6);
+}
+[data-theme="dark"] .search-result-item:hover {
+    background: rgba(30, 30, 30, 0.75);
+}
+[data-theme="dark"] .share-btn {
+    background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .share-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
    FOOTER
    ============================================================ */
 .site-footer {

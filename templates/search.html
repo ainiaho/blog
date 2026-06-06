@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{TITLE}}</title>
+    <meta name="description" content="{{META_DESC}}">
+    <meta property="og:title" content="{{OG_TITLE}}">
+    <meta property="og:description" content="{{OG_DESC}}">
+    <meta property="og:url" content="{{OG_URL}}">
+    <meta property="og:image" content="{{OG_IMAGE}}">
+    <meta property="og:type" content="{{OG_TYPE}}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{OG_TITLE}}">
+    <meta name="twitter:description" content="{{OG_DESC}}">
+    <link rel="alternate" type="application/rss+xml" title="西南" href="/feed.xml">
     <link rel="stylesheet" href="/assets/github-markdown.css">
     <link rel="stylesheet" href="/assets/style.css" media="screen and (min-width: 769px)">
     <link rel="stylesheet" href="/assets/style-mobile.css" media="screen and (max-width: 768px)">
@@ -39,6 +49,9 @@
                     <ul class="nav-links">
                         <li><a href="/index.html">首页</a></li>
                         <li><a href="/search.html">搜索</a></li>
+                        <li><button id="theme-toggle" class="theme-toggle-btn" aria-label="切换主题">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" id="theme-icon-sun"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button></li>
                     </ul>
                 </nav>
             </div>
@@ -59,6 +72,55 @@
         window.SEARCH_INDEX_DATA = {{SEARCH_DATA}};
     </script>
     <script src="/assets/search.js"></script>
+
+    <button id="back-to-top" class="back-to-top" aria-label="回到顶部">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 19V5m-7 7l7-7 7 7"/></svg>
+    </button>
+
+    <script>
+    // Dark mode toggle
+    (function(){
+        var iconSuns = document.querySelectorAll('#theme-icon-sun');
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.querySelectorAll('#theme-toggle').forEach(function(b) {
+                var svg = b.querySelector('svg');
+                if (svg) {
+                    if (theme === 'dark') {
+                        svg.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" fill="none"/>';
+                    } else {
+                        svg.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+                    }
+                }
+            });
+        }
+        var stored = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = stored || (prefersDark ? 'dark' : 'light');
+        setTheme(theme);
+        var btn = document.getElementById('theme-toggle');
+        if (btn) {
+            btn.addEventListener('click', function(){
+                var current = document.documentElement.getAttribute('data-theme');
+                var next = current === 'dark' ? 'light' : 'dark';
+                setTheme(next);
+                localStorage.setItem('theme', next);
+            });
+        }
+    })();
+
+    // Back to top
+    (function(){
+        var btn = document.getElementById('back-to-top');
+        if (!btn) return;
+        window.addEventListener('scroll', function(){
+            btn.classList.toggle('visible', window.scrollY > 300);
+        }, { passive: true });
+        btn.addEventListener('click', function(){
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    })();
+    </script>
 
     <script>
     // 页面转场过渡动画
