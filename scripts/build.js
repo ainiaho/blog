@@ -1059,8 +1059,7 @@ function generate404() {
 
 // Generate Sitemap
 function generateSitemap(posts) {
-    const baseUrl = 'https://yourdomain.com'; // TODO: Replace with actual domain
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    const baseUrl = 'https://blog.diepthink.top';
 
     // Static pages
     ['', '/search.html'].forEach(page => {
@@ -1152,7 +1151,7 @@ function generateTagPages(posts) {
 
 // Generate RSS feed
 function generateFeed(posts) {
-    const baseUrl = 'https://yourdomain.com';
+    const baseUrl = 'https://blog.diepthink.top';
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
