@@ -1,19 +1,22 @@
 ---
 title: markdown学习2
 date: 2026-04-12 19:30:0
-author: "西南"
+author: 西南
+description: Markdown 教程（第二篇）详细介绍了多种常用排版元素的语法和用法，包括链接、图片、有序/无序/层级列表、分割线、删除线、下划线、代码块、表格、脚注、转义字符、任务列表和数学公式，适合初学者快速掌握进阶 Markdown 技巧。
+series: markdown
 ---
+
 # markdown学习2
 ## 插入
 ### 链接
 在 Markdown 中插入链接
 <pre>
 ```markdown
-[链接文字](sslocal://flow/file_open?url=%E7%BD%91%E5%9D%80&flow_extra=eyJsaW5rX3R5cGUiOiJjb2RlX2ludGVycHJldGVyIn0=)
+[链接文字](https://blog.diepthink.top/)
 ```
 </pre>
 **示例：**
-[这是我的博客](sslocal://flow/file_open?url=https%3A%2F%2Fdiepthink.top&flow_extra=eyJsaW5rX3R5cGUiOiJjb2RlX2ludGVycHJldGVyIn0=)
+[这是我的博客](https://blog.diepthink.top/)
 
 ### 插入图片
 <pre>
@@ -132,7 +135,6 @@ Markdown 可以使用脚注[^1]
 **效果**
 - [ ] 学习英语
 - [x] 学习 Markdown
-
 ### 公式
 用 `$$` 包裹表示整行公式。
 **效果**
