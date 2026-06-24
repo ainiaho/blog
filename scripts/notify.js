@@ -56,7 +56,9 @@ const posts = changedFiles.map(file => {
         title = heading ? heading[1].trim() : path.basename(file, '.md');
     }
     const slug = file.replace(/\.md$/, '.html').replace(/^posts\//, '');
-    return { title, url: `${blogUrl}/posts/${slug}` };
+    const description = content.match(/^description:\s*["'](.+?)["']/m);
+    const desc = description ? description[1] : '';
+    return { title, url: `${blogUrl}/posts/${slug}`, description: desc };
 }).filter(Boolean);
 
 if (posts.length === 0) {
@@ -74,7 +76,10 @@ const payload = JSON.stringify({
 });
 
 console.log(`Notifying webhook about ${posts.length} updated post(s):`);
-posts.forEach(p => console.log(`  - ${p.title}: ${p.url}`));
+posts.forEach(p => {
+    const desc = p.description ? ` (${p.description.substring(0, 60)})` : '';
+    console.log(`  - ${p.title}: ${p.url}${desc}`);
+});
 
 // Parse webhook URL
 const isHttps = webhookUrl.startsWith('https://');
