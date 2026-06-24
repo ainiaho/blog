@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,6 +34,11 @@ jobs:
 
       - name: Build blog
         run: node scripts/build.js
+
+      - name: Notify webhook about updated posts
+        run: node scripts/notify.js
+        env:
+          NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
