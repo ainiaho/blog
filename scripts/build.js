@@ -471,8 +471,15 @@ function readPosts() {
 
     readDirRecursive(POSTS_DIR, POSTS_DIR);
 
-    // Sort by date descending
-    return posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Sort by date descending (newest first), no-date posts at end
+    return posts.sort((a, b) => {
+        const da = a.date ? new Date(a.date) : null;
+        const db = b.date ? new Date(b.date) : null;
+        if (!da && !db) return 0;
+        if (!da) return 1;
+        if (!db) return -1;
+        return db - da;
+    });
 }
 
 // Generate homepage with pagination
