@@ -2,10 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { marked } = require('marked');
-const footnote = require('marked-footnote');
-const alert = require('marked-alert');
-const katexExtension = require('marked-katex-extension');
+
+let marked, footnote, alert, katexExtension;
 
 // Directories
 const POSTS_DIR = path.join(__dirname, '..', 'posts');
@@ -221,63 +219,73 @@ function escapeHtml(text) {
 
 // Markdown Parser using marked
 
-// Custom renderer that adds IDs to headings (for TOC) and syntax highlighting for code
-const renderer = new marked.Renderer();
-const headings = [];
+let renderer, headings, markedOptions;
 
-renderer.heading = function(options) {
-    // marked v13+ passes options object, older versions pass (text, level, raw)
-    let text, level;
-    if (typeof options === 'object') {
-        text = options.text;
-        level = options.depth;
-    } else {
-        text = options;
-        level = arguments[1];
-    }
+async function initMarked() {
+    const mod = await import('marked');
+    marked = mod.marked;
+    footnote = (await import('marked-footnote')).default;
+    alert = (await import('marked-alert')).default;
+    katexExtension = (await import('marked-katex-extension')).default;
 
-    const id = text
-        .toLowerCase()
-        .replace(/[^\w\u4e00-\u9fff\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-');
+    // Custom renderer that adds IDs to headings (for TOC) and syntax highlighting for code
+    renderer = new marked.Renderer();
+    headings = [];
 
-    headings.push({ level, text, id });
-    return `<h${level} id="${id}">${text}</h${level}>`;
-};
+    renderer.heading = function(options) {
+        // marked v13+ passes options object, older versions pass (text, level, raw)
+        let text, level;
+        if (typeof options === 'object') {
+            text = options.text;
+            level = options.depth;
+        } else {
+            text = options;
+            level = arguments[1];
+        }
 
-// Code block syntax highlighting
-renderer.code = function(options) {
-    let lang, code;
-    if (typeof options === 'object') {
-        lang = options.lang || '';
-        code = options.text;
-    } else {
-        code = options;
-        lang = arguments[1];
-    }
+        const id = text
+            .toLowerCase()
+            .replace(/[^\w\u4e00-\u9fff\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
 
-    // Mermaid diagrams — render as <pre class="mermaid"> for JS library
-    if (lang === 'mermaid') {
-        const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return `<pre class="mermaid">${escaped}</pre>`;
-    }
+        headings.push({ level, text, id });
+        return `<h${level} id="${id}">${text}</h${level}>`;
+    };
 
-    const langAttr = lang ? ` data-lang="${lang}"` : '';
-    const highlighted = highlightCode(code, lang);
+    // Code block syntax highlighting
+    renderer.code = function(options) {
+        let lang, code;
+        if (typeof options === 'object') {
+            lang = options.lang || '';
+            code = options.text;
+        } else {
+            code = options;
+            lang = arguments[1];
+        }
 
-    return `<pre${langAttr}><code class="language-${lang}">${highlighted}</code></pre>`;
-};
+        // Mermaid diagrams — render as <pre class="mermaid"> for JS library
+        if (lang === 'mermaid') {
+            const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<pre class="mermaid">${escaped}</pre>`;
+        }
 
-// Marked configuration
-marked.use(footnote());
-marked.use(alert());
-marked.use(katexExtension({ throwOnError: false, nonStandard: true }));
-const markedOptions = {
-    gfm: true,
-    breaks: true,
-    renderer: renderer
-};
+        const langAttr = lang ? ` data-lang="${lang}"` : '';
+        const highlighted = highlightCode(code, lang);
+
+        return `<pre${langAttr}><code class="language-${lang}">${highlighted}</code></pre>`;
+    };
+
+    // Marked configuration
+    marked.use(footnote());
+    marked.use(alert());
+    marked.use(katexExtension({ throwOnError: false, nonStandard: true }));
+    markedOptions = {
+        gfm: true,
+        breaks: true,
+        renderer: renderer
+    };
+}
 
 // Markdown parser using marked
 function parseMarkdown(md) {
@@ -1197,8 +1205,10 @@ function generateFeed(posts) {
 }
 
 // Main build function
-function build() {
+async function build() {
     console.log('Building static blog...\n');
+
+    await initMarked();
 
     cleanOutput();
     copyAssets();
@@ -1227,4 +1237,4 @@ function build() {
 }
 
 // Run build
-build();
+build().catch(console.error);
