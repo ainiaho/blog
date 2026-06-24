@@ -827,6 +827,8 @@ function generatePostPages(posts) {
             OG_IMAGE: '/assets/avatar.jpg',
             OG_TYPE: 'article',
             TOC: post.toc || generateArticleSidebar(post, posts),
+            MOBILE_TOC: post.toc || '',
+            MOBILE_TOC_ATTR: post.toc ? '' : ' style="display:none"',
             CONTENT: content
         });
 
