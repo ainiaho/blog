@@ -36,19 +36,25 @@ try {
 
 // Parse frontmatter for each changed post
 const postsDir = path.join(__dirname, '..', 'posts');
-const baseUrl = (() => {
-    try { return execSync('node -e "console.log(require(\'./build.js\') || 1)"', { encoding: 'utf-8' }) || ''; }
-    catch { return ''; }
-})();
-
 const blogUrl = 'https://blog.diepthink.top';
 
 const posts = changedFiles.map(file => {
     const fullPath = path.join(__dirname, '..', file);
     if (!fs.existsSync(fullPath)) return null;
     const content = fs.readFileSync(fullPath, 'utf-8');
-    const titleMatch = content.match(/^title:\s*["'](.+?)["']/m);
-    const title = titleMatch ? titleMatch[1] : path.basename(file, '.md');
+    let title;
+    const quotedTitle = content.match(/^title:\s*["'](.+?)["']/m);
+    const unquotedTitle = content.match(/^title:\s*(.+)$/m);
+    if (quotedTitle) {
+        title = quotedTitle[1];
+    } else if (unquotedTitle) {
+        title = unquotedTitle[1].trim();
+    }
+    // Fall back to first heading like build.js does
+    if (!title) {
+        const heading = content.match(/^#\s+(.+)$/m);
+        title = heading ? heading[1].trim() : path.basename(file, '.md');
+    }
     const slug = file.replace(/\.md$/, '.html').replace(/^posts\//, '');
     return { title, url: `${blogUrl}/posts/${slug}` };
 }).filter(Boolean);
