@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/assets/style-mobile.css" media="screen and (max-width: 768px)">
     <link rel="icon" href="/assets/avatar.jpg" type="image/jpeg">
     <link rel="apple-touch-icon" href="/assets/avatar.jpg">
+    <link rel="manifest" href="/assets/manifest.json">
     <script>
     // 动态加载样式 - 根据屏幕宽度切换
     (function() {
@@ -473,6 +474,34 @@
             }, DURATION);
         });
     })();
+    </script>
+    <div id="lightbox" class="lightbox-overlay" onclick="this.classList.remove('open')">
+        <button class="lightbox-close" onclick="document.getElementById('lightbox').classList.remove('open')">&times;</button>
+        <img id="lightbox-img" src="" alt="">
+    </div>
+    <script>
+    (function() {
+        var lightbox = document.getElementById('lightbox');
+        var lightboxImg = document.getElementById('lightbox-img');
+        document.querySelectorAll('.post-content img').forEach(function(img) {
+            img.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) return;
+                e.stopPropagation();
+                lightboxImg.src = this.src;
+                lightbox.classList.add('open');
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && lightbox.classList.contains('open')) {
+                lightbox.classList.remove('open');
+            }
+        });
+    })();
+    </script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/assets/sw.js');
+    }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>

@@ -802,6 +802,16 @@ function generatePostPages(posts) {
         </div>
         `;
 
+        // Check if post is outdated (> 365 days)
+        let outdatedHtml = '';
+        if (post.date) {
+            const daysSince = (Date.now() - new Date(post.date).getTime()) / 86400000;
+            if (daysSince > 365) {
+                const years = Math.floor(daysSince / 365);
+                outdatedHtml = `<div class="outdated-banner"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> 本文发布于 ${years} 年前，内容可能已不适用</div>`;
+            }
+        }
+
         let content = `
         <article class="post-header">
             ${dateHtml}
@@ -809,6 +819,7 @@ function generatePostPages(posts) {
             ${tagsHtml}
             ${post.author ? `<div class="post-author"><span class="author-badge">${post.author}</span></div>` : ''}
         </article>
+        ${outdatedHtml}
         ${seriesHtml}
         <article class="markdown-body post-content">
             ${post.content}
