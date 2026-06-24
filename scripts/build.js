@@ -701,49 +701,40 @@ function getSeriesHtml(post, allPosts) {
 
 // Generate article info sidebar for posts without TOC
 function generateArticleSidebar(post, allPosts) {
-    let html = '';
+    let items = '';
 
-    // Article info card
     const metaParts = [];
-    if (post.date) metaParts.push(`<div class="sidebar-info-item"><span class="info-label">发布时间</span><span>${formatDate(post.date)}</span></div>`);
-    if (post.author) metaParts.push(`<div class="sidebar-info-item"><span class="info-label">作者</span><span>${post.author}</span></div>`);
-    if (post.readingTime) metaParts.push(`<div class="sidebar-info-item"><span class="info-label">阅读时间</span><span>${post.readingTime} 分钟</span></div>`);
+    if (post.date) metaParts.push(`<div class="info-row"><span class="info-label">发布时间</span><span>${formatDate(post.date)}</span></div>`);
+    if (post.author) metaParts.push(`<div class="info-row"><span class="info-label">作者</span><span>${post.author}</span></div>`);
+    if (post.readingTime) metaParts.push(`<div class="info-row"><span class="info-label">阅读时间</span><span>${post.readingTime} 分钟</span></div>`);
     if (metaParts.length > 0) {
-        html += `<div class="sidebar-card"><div class="sidebar-card-title">文章信息</div>${metaParts.join('')}</div>`;
+        items += `<div class="toc-section">${metaParts.join('')}</div>`;
     }
 
-    // Category
     if (post.category) {
-        html += `<div class="sidebar-card"><div class="sidebar-card-title">分类</div><a class="sidebar-link" href="/categories/${post.category}.html">${post.category}</a></div>`;
+        items += `<div class="toc-section"><div class="toc-section-title">分类</div><a class="toc-link" href="/categories/${post.category}.html">${post.category}</a></div>`;
     }
 
-    // Tags
     if (post.tags && post.tags.length > 0) {
-        html += `<div class="sidebar-card"><div class="sidebar-card-title">标签</div><div class="sidebar-tags">${post.tags.map(t => `<a class="tag" href="/tags/${encodeURIComponent(t)}.html">#${t}</a>`).join(' ')}</div></div>`;
+        items += `<div class="toc-section"><div class="toc-section-title">标签</div><div class="info-tags">${post.tags.map(t => `<a class="info-tag" href="/tags/${encodeURIComponent(t)}.html">#${t}</a>`).join(' ')}</div></div>`;
     }
 
-    // Related posts
     const relatedPosts = findRelatedPosts(post, allPosts);
     if (relatedPosts.length > 0) {
-        html += `<div class="sidebar-card"><div class="sidebar-card-title">相关文章</div><div class="sidebar-links">`;
+        items += `<div class="toc-section"><div class="toc-section-title">相关文章</div>`;
         relatedPosts.forEach(rp => {
-            html += `<a href="/posts/${rp.slug}.html" class="sidebar-link">${rp.title}</a>`;
+            items += `<a href="/posts/${rp.slug}.html" class="toc-link">${rp.title}</a>`;
         });
-        html += `</div></div>`;
+        items += `</div>`;
     }
 
-    // Quick links
-    html += `
-        <div class="sidebar-card">
-            <div class="sidebar-card-title">快速导航</div>
-            <div class="sidebar-links">
-                <a href="/search.html" class="sidebar-link">搜索文章</a>
-                <a href="/tags/index.html" class="sidebar-link">标签云</a>
-                <a href="/feed.xml" class="sidebar-link">订阅(RSS)</a>
-            </div>
-        </div>`;
+    items += `<div class="toc-section"><div class="toc-section-title">快速导航</div>
+        <a href="/search.html" class="toc-link">搜索文章</a>
+        <a href="/tags/index.html" class="toc-link">标签云</a>
+        <a href="/feed.xml" class="toc-link">订阅(RSS)</a>
+    </div>`;
 
-    return html;
+    return `<nav class="toc-nav">${items}</nav>`;
 }
 
 // Generate individual post pages
