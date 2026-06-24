@@ -396,10 +396,14 @@ function estimateReadingTime(html) {
     const text = html.replace(/<[^>]*>/g, '');
     const cjkChars = (text.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/g) || []).length;
     const words = text.replace(/[\u4e00-\u9fff]/g, '').split(/\s+/).filter(Boolean).length;
-    const minutes = Math.ceil(cjkChars / 500 + words / 200);
-    return Math.max(1, minutes);
+    const codeBlocks = html.match(/<pre[\s\S]*?<\/pre>/g) || [];
+    const codeText = codeBlocks.map(b => b.replace(/<[^>]*>/g, '')).join('');
+    const codeCjk = (codeText.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/g) || []).length;
+    const codeWords = codeText.replace(/[\u4e00-\u9fff]/g, '').split(/\s+/).filter(Boolean).length;
+    const images = (html.match(/<img[\s\S]*?>/g) || []).length;
+    const minutes = (cjkChars - codeCjk) / 300 + (words - codeWords) / 160 + (codeCjk / 150 + codeWords / 80) * 2 + images * 0.2;
+    return Math.max(1, Math.round(minutes));
 }
-
 // Clean output directory
 function cleanOutput() {
     if (fs.existsSync(OUTPUT_DIR)) {
