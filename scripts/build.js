@@ -699,6 +699,53 @@ function getSeriesHtml(post, allPosts) {
     return html;
 }
 
+// Generate article info sidebar for posts without TOC
+function generateArticleSidebar(post, allPosts) {
+    let html = '';
+
+    // Article info card
+    const metaParts = [];
+    if (post.date) metaParts.push(`<div class="sidebar-info-item"><span class="info-label">发布时间</span><span>${formatDate(post.date)}</span></div>`);
+    if (post.author) metaParts.push(`<div class="sidebar-info-item"><span class="info-label">作者</span><span>${post.author}</span></div>`);
+    if (post.readingTime) metaParts.push(`<div class="sidebar-info-item"><span class="info-label">阅读时间</span><span>${post.readingTime} 分钟</span></div>`);
+    if (metaParts.length > 0) {
+        html += `<div class="sidebar-card"><div class="sidebar-card-title">文章信息</div>${metaParts.join('')}</div>`;
+    }
+
+    // Category
+    if (post.category) {
+        html += `<div class="sidebar-card"><div class="sidebar-card-title">分类</div><a class="sidebar-link" href="/categories/${post.category}.html">${post.category}</a></div>`;
+    }
+
+    // Tags
+    if (post.tags && post.tags.length > 0) {
+        html += `<div class="sidebar-card"><div class="sidebar-card-title">标签</div><div class="sidebar-tags">${post.tags.map(t => `<a class="tag" href="/tags/${encodeURIComponent(t)}.html">#${t}</a>`).join(' ')}</div></div>`;
+    }
+
+    // Related posts
+    const relatedPosts = findRelatedPosts(post, allPosts);
+    if (relatedPosts.length > 0) {
+        html += `<div class="sidebar-card"><div class="sidebar-card-title">相关文章</div><div class="sidebar-links">`;
+        relatedPosts.forEach(rp => {
+            html += `<a href="/posts/${rp.slug}.html" class="sidebar-link">${rp.title}</a>`;
+        });
+        html += `</div></div>`;
+    }
+
+    // Quick links
+    html += `
+        <div class="sidebar-card">
+            <div class="sidebar-card-title">快速导航</div>
+            <div class="sidebar-links">
+                <a href="/search.html" class="sidebar-link">搜索文章</a>
+                <a href="/tags/index.html" class="sidebar-link">标签云</a>
+                <a href="/feed.xml" class="sidebar-link">订阅(RSS)</a>
+            </div>
+        </div>`;
+
+    return html;
+}
+
 // Generate individual post pages
 function generatePostPages(posts) {
     // Read article layout template
@@ -788,7 +835,7 @@ function generatePostPages(posts) {
             OG_URL: `/posts/${post.slug}.html`,
             OG_IMAGE: '/assets/avatar.jpg',
             OG_TYPE: 'article',
-            TOC: post.toc,
+            TOC: post.toc || generateArticleSidebar(post, posts),
             CONTENT: content
         });
 
