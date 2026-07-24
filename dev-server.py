@@ -27,7 +27,7 @@ class Handler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(OUTPUT_DIR), **kwargs)
 
     def send_head(self):
-        path = self.translate_path(self.path)
+        path = Path(self.translate_path(self.path))
         if not path.exists() and not self.path.startswith("/api/"):
             self.path = "/404.html"
         return super().send_head()
