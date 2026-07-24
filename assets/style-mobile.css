@@ -689,6 +689,18 @@ body {
     margin: 10px 0 !important;
 }
 
+[data-theme="dark"] .markdown-body table tr {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-top-color: rgba(48, 54, 61, 0.5);
+}
+[data-theme="dark"] .markdown-body table tr:nth-child(2n) {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="dark"] .markdown-body table td,
+[data-theme="dark"] .markdown-body table th {
+    border-color: rgba(48, 54, 61, 0.5);
+}
+
 .markdown-body hr {
     margin: 16px 0 !important;
 }
