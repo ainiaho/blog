@@ -15,6 +15,10 @@ const ASSETS_DIR = path.join(__dirname, '..', 'assets');
 const POSTS_PER_PAGE = 10;
 const CATEGORY_POSTS_PER_PAGE = 4;
 
+// Watermark system integration
+const WATERMARK_ENABLED = false; // Set to true to watermark future post images automatically
+const { addWatermark } = require('./watermark');
+
 // Read template
 const layoutTemplate = fs.readFileSync(path.join(TEMPLATES_DIR, 'layout.html'), 'utf-8');
 
@@ -494,24 +498,46 @@ async function generateAiDescription(title, plainTextContent) {
 }
 
 // Copy assets
-function copyAssets() {
+async function copyAssets() {
     const files = fs.readdirSync(ASSETS_DIR);
     const buildVersion = Date.now().toString(); // Generate unique version for Cache-Busting sw.js
     
-    files.forEach(file => {
-        const src = path.join(ASSETS_DIR, file);
-        const dest = path.join(OUTPUT_DIR, 'assets', file);
-        
-        if (file === 'sw.js') {
-            // Replace VERSION_PLACEHOLDER dynamically in sw.js
-            let swContent = fs.readFileSync(src, 'utf-8');
-            swContent = swContent.replace('VERSION_PLACEHOLDER', buildVersion);
-            fs.writeFileSync(dest, swContent, 'utf-8');
-            console.log(`PWA Service Worker updated with version: ${buildVersion}`);
+    // Use a queue of promises to copy assets, handles nested subdirectories like assets/images/
+    async function copyRecursive(srcPath, destPath) {
+        const stats = fs.statSync(srcPath);
+        if (stats.isDirectory()) {
+            if (!fs.existsSync(destPath)) {
+                fs.mkdirSync(destPath, { recursive: true });
+            }
+            const entries = fs.readdirSync(srcPath);
+            for (const entry of entries) {
+                await copyRecursive(path.join(srcPath, entry), path.join(destPath, entry));
+            }
         } else {
-            fs.copyFileSync(src, dest);
+            const fileName = path.basename(srcPath);
+            if (fileName === 'sw.js') {
+                // Replace VERSION_PLACEHOLDER dynamically in sw.js
+                let swContent = fs.readFileSync(srcPath, 'utf-8');
+                swContent = swContent.replace('VERSION_PLACEHOLDER', buildVersion);
+                fs.writeFileSync(destPath, swContent, 'utf-8');
+                console.log(`PWA Service Worker updated with version: ${buildVersion}`);
+            } else {
+                fs.copyFileSync(srcPath, destPath);
+                
+                // If watermarking is enabled, apply to image files
+                if (WATERMARK_ENABLED && /\.(jpg|jpeg|png|webp)$/i.test(fileName)) {
+                    // Do not watermark the avatar itself to avoid ruin it for PWA icons
+                    if (fileName !== 'avatar.jpg') {
+                        await addWatermark(destPath, destPath);
+                    }
+                }
+            }
         }
-    });
+    }
+
+    for (const file of files) {
+        await copyRecursive(path.join(ASSETS_DIR, file), path.join(OUTPUT_DIR, 'assets', file));
+    }
 }
 
 // Read all posts (supports categories as subdirectories)
@@ -1611,7 +1637,7 @@ async function build() {
     await initMarked();
 
     cleanOutput();
-    copyAssets();
+    await copyAssets();
 
     const posts = await readPosts();
     console.log(`Found ${posts.length} posts\n`);
