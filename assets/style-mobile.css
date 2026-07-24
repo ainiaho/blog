@@ -1560,10 +1560,14 @@ body {
     font-weight: 600;
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     color: var(--text-primary);
     display: flex;
     align-items: center;
+}
+
+[data-theme="dark"] .comments-title {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .giscus-wrapper {
