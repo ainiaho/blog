@@ -13,6 +13,7 @@ const ASSETS_DIR = path.join(__dirname, '..', 'assets');
 
 // Pagination config
 const POSTS_PER_PAGE = 10;
+const CATEGORY_POSTS_PER_PAGE = 4;
 
 // Read template
 const layoutTemplate = fs.readFileSync(path.join(TEMPLATES_DIR, 'layout.html'), 'utf-8');
@@ -1049,32 +1050,83 @@ function generateCategoryPages(posts) {
 
     categories.forEach(category => {
         const categoryPosts = posts.filter(p => p.category === category);
-        
-        // Generate category header
-        let content = `<div class="category-header">
-            <h1>${category}</h1>
-            <p class="category-count">${categoryPosts.length} 篇文章</p>
-        </div>\n`;
-        
-        content += renderPostList(categoryPosts, '');
+        const totalPages = Math.ceil(categoryPosts.length / CATEGORY_POSTS_PER_PAGE);
 
-        const desc = `${category} 分类 - ${categoryPosts.length} 篇文章`;
-        const html = renderTemplate(categoryTemplate, {
-            TITLE: `${category} - 西南`,
-            META_DESC: desc,
-            OG_TITLE: `${category} - 西南`,
-            OG_DESC: desc,
-            OG_URL: `/categories/${category}.html`,
-            OG_IMAGE: '/assets/avatar.jpg',
-            OG_TYPE: 'website',
-            SIDEBAR: renderSidebar(posts),
-            CONTENT: content,
-            PAGINATION: ''
-        });
+        for (let page = 1; page <= totalPages; page++) {
+            const start = (page - 1) * CATEGORY_POSTS_PER_PAGE;
+            const end = start + CATEGORY_POSTS_PER_PAGE;
+            const pagePosts = categoryPosts.slice(start, end);
 
-        const outputPath = path.join(OUTPUT_DIR, 'categories', `${category}.html`);
-        fs.writeFileSync(outputPath, minifyHtml(html));
-        console.log(`Generated: categories/${category}.html`);
+            // Generate category header
+            let content = `<div class="category-header">
+                <h1>${category}</h1>
+                <p class="category-count">${categoryPosts.length} 篇文章</p>
+            </div>\n`;
+            
+            content += renderPostList(pagePosts, '', page);
+
+            // Generate pagination
+            let pagination = '';
+            if (totalPages > 1) {
+                pagination = '<div class="pagination">';
+                
+                if (page > 1) {
+                    pagination += page === 2
+                        ? `<a href="/categories/${category}.html" class="pagination-btn">&larr; 上一页</a>`
+                        : `<a href="/categories/${category}/page/${page - 1}.html" class="pagination-btn">&larr; 上一页</a>`;
+                } else {
+                    pagination += '<span class="pagination-btn disabled">上一页</span>';
+                }
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === page) {
+                        pagination += `<span class="pagination-btn active">${i}</span>`;
+                    } else if (i === 1) {
+                        pagination += `<a href="/categories/${category}.html" class="pagination-btn">1</a>`;
+                    } else {
+                        pagination += `<a href="/categories/${category}/page/${i}.html" class="pagination-btn">${i}</a>`;
+                    }
+                }
+                
+                if (page < totalPages) {
+                    pagination += `<a href="/categories/${category}/page/${page + 1}.html" class="pagination-btn">下一页 &rarr;</a>`;
+                } else {
+                    pagination += '<span class="pagination-btn disabled">下一页</span>';
+                }
+                
+                pagination += '</div>';
+            }
+
+            const desc = `${category} 分类 - ${categoryPosts.length} 篇文章`;
+            const ogUrl = page === 1 ? `/categories/${category}.html` : `/categories/${category}/page/${page}.html`;
+
+            const html = renderTemplate(categoryTemplate, {
+                TITLE: page === 1 ? `${category} - 西南` : `${category} - 第 ${page} 页 - 西南`,
+                META_DESC: desc,
+                OG_TITLE: `${category} - 西南`,
+                OG_DESC: desc,
+                OG_URL: ogUrl,
+                OG_IMAGE: '/assets/avatar.jpg',
+                OG_TYPE: 'website',
+                SIDEBAR: renderSidebar(posts),
+                CONTENT: content,
+                PAGINATION: pagination
+            });
+
+            let outputPath;
+            if (page === 1) {
+                outputPath = path.join(OUTPUT_DIR, 'categories', `${category}.html`);
+            } else {
+                const pageDir = path.join(OUTPUT_DIR, 'categories', category, 'page');
+                if (!fs.existsSync(pageDir)) {
+                    fs.mkdirSync(pageDir, { recursive: true });
+                }
+                outputPath = path.join(pageDir, `${page}.html`);
+            }
+
+            fs.writeFileSync(outputPath, minifyHtml(html));
+            console.log(`Generated: categories/${category}${page > 1 ? `/page/${page}` : ''}.html`);
+        }
     });
 }
 
