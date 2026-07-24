@@ -2076,3 +2076,32 @@ body {
 .post-content img {
     cursor: zoom-in;
 }
+
+/* ============================================================
+   Giscus 评论区
+   ============================================================ */
+.comments-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    border: var(--glass-border);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-shadow);
+}
+
+.comments-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+}
+
+.giscus-wrapper {
+    min-height: 150px;
+}
