@@ -631,11 +631,13 @@ function generateHomepage(posts, page = 1) {
             TITLE: '西南',
             META_DESC: '西南的个人博客',
             OG_TITLE: '西南',
-            OG_DESC: '西南的个人博客',
+            OG_DESC: '西南 the personal blog',
             OG_URL: '/',
             OG_IMAGE: '/assets/avatar.jpg',
             OG_TYPE: 'website',
             CANONICAL_URL: '/',
+            AUTHOR: '西南',
+            DATE_PUBLISHED: new Date().toISOString(),
             WEBSITE_JSON_LD: websiteJsonLd,
             PREV_NEXT_REL: '',
             SIDEBAR: renderSidebar(posts),
@@ -702,6 +704,8 @@ function generateHomepage(posts, page = 1) {
         OG_IMAGE: '/assets/avatar.jpg',
         OG_TYPE: 'website',
         CANONICAL_URL: canonicalUrl,
+        AUTHOR: '西南',
+        DATE_PUBLISHED: new Date().toISOString(),
         WEBSITE_JSON_LD: websiteJsonLd,
         PREV_NEXT_REL: prevNextRel,
         SIDEBAR: renderSidebar(posts),
@@ -1108,6 +1112,9 @@ function generateCategoryPages(posts) {
                 OG_URL: ogUrl,
                 OG_IMAGE: '/assets/avatar.jpg',
                 OG_TYPE: 'website',
+                CANONICAL_URL: page === 1 ? `/categories/${category}.html` : `/categories/${category}/page/${page}.html`,
+                AUTHOR: '西南',
+                DATE_PUBLISHED: new Date().toISOString(),
                 SIDEBAR: renderSidebar(posts),
                 CONTENT: content,
                 PAGINATION: pagination
@@ -1232,6 +1239,9 @@ function generateSearchPage(posts) {
         OG_URL: '/search.html',
         OG_IMAGE: '/assets/avatar.jpg',
         OG_TYPE: 'website',
+        CANONICAL_URL: '/search.html',
+        AUTHOR: '西南',
+        DATE_PUBLISHED: new Date().toISOString(),
         CONTENT: content
     });
 
@@ -1358,24 +1368,50 @@ function generateSitemap(posts) {
 
     // Static pages
     ['', '/search.html', '/tags/index.html'].forEach(page => {
-        xml += `  <url><loc>${baseUrl}${page}</loc><priority>${page === '' ? '1.0' : '0.8'}</priority></url>\n`;
+        const priority = page === '' ? '1.0' : '0.8';
+        const changefreq = page === '' ? 'daily' : 'weekly';
+        const lastmod = new Date().toISOString().split('T')[0];
+        xml += `  <url>\n    <loc>${baseUrl}${page}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>\n`;
     });
+
+    // Homepage Pagination Pages
+    const homeTotalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
+    if (homeTotalPages > 1) {
+        for (let i = 2; i <= homeTotalPages; i++) {
+            const lastmod = new Date().toISOString().split('T')[0];
+            xml += `  <url>\n    <loc>${baseUrl}/page/${i}.html</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+        }
+    }
 
     // Categories
     const categories = [...new Set(posts.map(p => p.category).filter(c => c))];
     categories.forEach(category => {
-        xml += `  <url><loc>${baseUrl}/categories/${category}.html</loc><priority>0.5</priority></url>\n`;
+        const categoryPosts = posts.filter(p => p.category === category);
+        const totalPages = Math.ceil(categoryPosts.length / CATEGORY_POSTS_PER_PAGE);
+        const lastmod = new Date().toISOString().split('T')[0];
+
+        // Page 1
+        xml += `  <url>\n    <loc>${baseUrl}/categories/${category}.html</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
+
+        // Pagination pages for categories
+        if (totalPages > 1) {
+            for (let i = 2; i <= totalPages; i++) {
+                xml += `  <url>\n    <loc>${baseUrl}/categories/${category}/page/${i}.html</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.5</priority>\n  </url>\n`;
+            }
+        }
     });
 
     // Tags
     const tagMap = collectTags(posts);
     Object.keys(tagMap).forEach(tag => {
-        xml += `  <url><loc>${baseUrl}/tags/${encodeURIComponent(tag)}.html</loc><priority>0.4</priority></url>\n`;
+        const lastmod = new Date().toISOString().split('T')[0];
+        xml += `  <url>\n    <loc>${baseUrl}/tags/${encodeURIComponent(tag)}.html</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.4</priority>\n  </url>\n`;
     });
 
     // Posts
     posts.forEach(post => {
-        xml += `  <url><loc>${baseUrl}/posts/${post.slug}.html</loc><priority>0.6</priority></url>\n`;
+        const postDate = post.date ? new Date(post.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        xml += `  <url>\n    <loc>${baseUrl}/posts/${post.slug}.html</loc>\n    <lastmod>${postDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
     });
 
     xml += '</urlset>';
@@ -1424,6 +1460,9 @@ function generateTagPages(posts) {
             OG_URL: `/tags/${encodeURIComponent(tag)}.html`,
             OG_IMAGE: '/assets/avatar.jpg',
             OG_TYPE: 'website',
+            CANONICAL_URL: `/tags/${encodeURIComponent(tag)}.html`,
+            AUTHOR: '西南',
+            DATE_PUBLISHED: new Date().toISOString(),
             SIDEBAR: renderSidebar(posts),
             CONTENT: content,
             PAGINATION: ''
@@ -1458,6 +1497,9 @@ function generateTagPages(posts) {
         OG_URL: '/tags/index.html',
         OG_IMAGE: '/assets/avatar.jpg',
         OG_TYPE: 'website',
+        CANONICAL_URL: '/tags/index.html',
+        AUTHOR: '西南',
+        DATE_PUBLISHED: new Date().toISOString(),
         SIDEBAR: renderSidebar(posts),
         CONTENT: cloudContent,
         PAGINATION: ''
@@ -1527,7 +1569,9 @@ function generateOfflinePage() {
 function generateFeed(posts) {
     const baseUrl = 'https://blog.diepthink.top';
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" 
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/">
 <channel>
     <title>西南</title>
     <link>${baseUrl}</link>
@@ -1540,12 +1584,15 @@ function generateFeed(posts) {
     const feedPosts = posts.slice(0, 20);
     feedPosts.forEach(post => {
         const description = post.excerpt.replace(/<[^>]*>/g, '').substring(0, 500);
+        // Replace absolute URL references in content if necessary, wrapping content in CDATA
+        const fullContent = `<![CDATA[${post.content}]]>`;
         xml += `    <item>
         <title>${post.title}</title>
         <link>${baseUrl}/posts/${post.slug}.html</link>
         <guid>${baseUrl}/posts/${post.slug}.html</guid>
         <pubDate>${post.date ? new Date(post.date).toUTCString() : new Date().toUTCString()}</pubDate>
         <description><![CDATA[${description}]]></description>
+        <content:encoded>${fullContent}</content:encoded>
     </item>
 `;
     });
