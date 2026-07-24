@@ -1159,8 +1159,7 @@ function generateSearchPage(posts) {
         OG_URL: '/search.html',
         OG_IMAGE: '/assets/avatar.jpg',
         OG_TYPE: 'website',
-        CONTENT: content,
-        SEARCH_DATA: searchData
+        CONTENT: content
     });
 
     fs.writeFileSync(path.join(OUTPUT_DIR, 'search.html'), html);
@@ -1395,6 +1394,62 @@ function generateTagPages(posts) {
     console.log('Generated: tags/index.html');
 }
 
+// Generate offline page for PWA fallback
+function generateOfflinePage() {
+    const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离线 - 西南</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-gradient); color: white;
+            text-align: center;
+        }
+        .card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            padding: 50px 60px;
+            max-width: 420px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.1);
+        }
+        .icon { font-size: 4rem; margin-bottom: 10px; }
+        h1 { font-size: 1.6rem; margin: 0 0 12px; }
+        p { opacity: 0.9; line-height: 1.6; margin: 0 0 28px; font-size: 0.95rem; }
+        .btn {
+            padding: 12px 30px;
+            background: #fff; color: #667eea;
+            text-decoration: none; border-radius: 50px;
+            font-weight: bold; transition: 0.3s transform;
+            display: inline-block;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .hint { margin-top: 20px; font-size: 0.8rem; opacity: 0.6; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">📡</div>
+        <h1>您已离线</h1>
+        <p>当前没有任何网络连接。<br>请检查网络后重试，或浏览您已缓存的页面。</p>
+        <a href="/" class="btn">返回首页</a>
+        <div class="hint">已缓存的页面在离线时仍可正常访问</div>
+    </div>
+</body>
+</html>`;
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'offline.html'), html);
+    console.log('Generated: offline.html');
+}
+
 // Generate RSS feed
 function generateFeed(posts) {
     const baseUrl = 'https://blog.diepthink.top';
@@ -1448,6 +1503,7 @@ async function build() {
     generateSearchIndex(posts);
     generateSearchPage(posts);
     generate404();
+    generateOfflinePage();
     generateSitemap(posts);
     generateRobots();
     generateFeed(posts);

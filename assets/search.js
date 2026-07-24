@@ -1,5 +1,6 @@
 (function() {
-    var searchIndex = window.SEARCH_INDEX_DATA || [];
+    var searchIndex = null;
+    var searchIndexPromise = null;
     var input = document.getElementById('search-input');
     var results = document.getElementById('search-results');
     var hint = document.getElementById('search-hint');
@@ -8,12 +9,41 @@
 
     if (!input) return;
 
+    function loadSearchIndex(callback) {
+        if (searchIndex) { callback(searchIndex); return; }
+        if (searchIndexPromise) { searchIndexPromise.then(callback); return; }
+        searchIndexPromise = fetch('/search-index.json')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                searchIndex = data;
+                callback(searchIndex);
+                return data;
+            })
+            .catch(function() {
+                hint.textContent = '搜索索引加载失败，请刷新重试';
+                hint.style.display = 'block';
+            });
+    }
+
+    // Load index on first focus/click into search area
+    function ensureIndexLoaded() {
+        if (!searchIndex && !searchIndexPromise) {
+            loadSearchIndex(function(){});
+        }
+    }
+    input.addEventListener('focus', ensureIndexLoaded);
+    input.addEventListener('click', ensureIndexLoaded);
+
     input.addEventListener('input', function() {
         clearTimeout(debounceTimer);
         var query = this.value.trim();
         clearBtn.style.display = query ? 'block' : 'none';
         debounceTimer = setTimeout(function() {
-            search(query);
+            if (!searchIndex) {
+                loadSearchIndex(function() { search(query); });
+            } else {
+                search(query);
+            }
         }, 200);
     });
 

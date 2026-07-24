@@ -1,6 +1,7 @@
 const CACHE = 'blog-VERSION_PLACEHOLDER';
 const PRECACHE_URLS = [
   '/index.html',
+  '/offline.html',
   '/assets/style.css',
   '/assets/style-mobile.css',
   '/assets/github-markdown.css',
@@ -39,6 +40,11 @@ self.addEventListener('fetch', event => {
     url.pathname === '/' || 
     url.pathname.startsWith('/page/');
 
+  // Offline fallback: when both network and cache miss, show /offline.html
+  function offlineFallback() {
+    return caches.match('/offline.html');
+  }
+
   if (isDynamicPage) {
     event.respondWith(
       fetch(event.request)
@@ -49,7 +55,7 @@ self.addEventListener('fetch', event => {
           }
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => caches.match(event.request).then(cached => cached || offlineFallback()))
     );
   } else {
     // 2. 静态资源 (CSS, JS, 图片, 字体) 采用 Cache-First (缓存优先) 策略
@@ -63,7 +69,7 @@ self.addEventListener('fetch', event => {
           return response;
         }).catch(() => null);
 
-        return cached || fetched;
+        return cached || fetched || offlineFallback();
       })
     );
   }
