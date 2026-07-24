@@ -604,6 +604,7 @@ function generateHomepage(posts, page = 1) {
     // If only one page, no pagination needed
     if (totalPages <= 1) {
         renderPostList(posts, '');
+        const websiteJsonLd = '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "WebSite",\n  "name": "西南",\n  "url": "https://blog.diepthink.top/",\n  "potentialAction": {\n    "@type": "SearchAction",\n    "target": {\n      "@type": "EntryPoint",\n      "urlTemplate": "https://blog.diepthink.top/search.html?q={search_term_string}"\n    },\n    "query-input": "required name=search_term_string"\n  }\n}\n</script>';
         const html = renderTemplate(layoutTemplate, {
             TITLE: '西南',
             META_DESC: '西南的个人博客',
@@ -612,6 +613,9 @@ function generateHomepage(posts, page = 1) {
             OG_URL: '/',
             OG_IMAGE: '/assets/avatar.jpg',
             OG_TYPE: 'website',
+            CANONICAL_URL: '/',
+            WEBSITE_JSON_LD: websiteJsonLd,
+            PREV_NEXT_REL: '',
             SIDEBAR: renderSidebar(posts),
             CONTENT: renderPostList(posts, ''),
             PAGINATION: ''
@@ -657,6 +661,16 @@ function generateHomepage(posts, page = 1) {
 
     const metaDesc = page === 1 ? '西南的个人博客' : `第 ${page} 页 - 西南的个人博客`;
     const canonicalUrl = page === 1 ? '/' : `/page/${page}.html`;
+    const baseUrl = 'https://blog.diepthink.top';
+    const websiteJsonLd = page === 1 ? '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "WebSite",\n  "name": "西南",\n  "url": "https://blog.diepthink.top/",\n  "potentialAction": {\n    "@type": "SearchAction",\n    "target": {\n      "@type": "EntryPoint",\n      "urlTemplate": "https://blog.diepthink.top/search.html?q={search_term_string}"\n    },\n    "query-input": "required name=search_term_string"\n  }\n}\n</script>' : '';
+    let prevNextRel = '';
+    if (page > 1) {
+        const prevHref = page === 2 ? '/' : `/page/${page - 1}.html`;
+        prevNextRel += `<link rel="prev" href="${baseUrl}${prevHref}">\n`;
+    }
+    if (page < totalPages) {
+        prevNextRel += `<link rel="next" href="${baseUrl}/page/${page + 1}.html">\n`;
+    }
     const html = renderTemplate(layoutTemplate, {
         TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
         META_DESC: metaDesc,
@@ -666,6 +680,8 @@ function generateHomepage(posts, page = 1) {
         OG_IMAGE: '/assets/avatar.jpg',
         OG_TYPE: 'website',
         CANONICAL_URL: canonicalUrl,
+        WEBSITE_JSON_LD: websiteJsonLd,
+        PREV_NEXT_REL: prevNextRel,
         SIDEBAR: renderSidebar(posts),
         CONTENT: content,
         PAGINATION: pagination
@@ -945,6 +961,14 @@ function generatePostPages(posts) {
 
         const ogDesc = post.description || post.excerpt.replace(/<[^>]*>/g, '').substring(0, 160);
         const isoDate = post.date ? new Date(post.date).toISOString() : new Date().toISOString();
+        const safeTitle = post.title.replace(/"/g, '\\"');
+        const baseUrl = 'https://blog.diepthink.top';
+        let breadcrumbJsonLd;
+        if (post.category) {
+            breadcrumbJsonLd = `<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "BreadcrumbList",\n  "itemListElement": [{\n    "@type": "ListItem",\n    "position": 1,\n    "name": "首页",\n    "item": "${baseUrl}/"\n  },{\n    "@type": "ListItem",\n    "position": 2,\n    "name": "${post.category}",\n    "item": "${baseUrl}/categories/${post.category}.html"\n  },{\n    "@type": "ListItem",\n    "position": 3,\n    "name": "${safeTitle}",\n    "item": "${baseUrl}/posts/${post.slug}.html"\n  }]\n}\n</script>`;
+        } else {
+            breadcrumbJsonLd = `<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "BreadcrumbList",\n  "itemListElement": [{\n    "@type": "ListItem",\n    "position": 1,\n    "name": "首页",\n    "item": "${baseUrl}/"\n  },{\n    "@type": "ListItem",\n    "position": 2,\n    "name": "${safeTitle}",\n    "item": "${baseUrl}/posts/${post.slug}.html"\n  }]\n}\n</script>`;
+        }
         const html = renderTemplate(articleTemplate, {
             TITLE: post.title + ' - 西南',
             META_DESC: ogDesc,
@@ -956,6 +980,7 @@ function generatePostPages(posts) {
             CANONICAL_URL: `/posts/${post.slug}.html`,
             AUTHOR: post.author || '西南',
             DATE_PUBLISHED: isoDate,
+            BREADCRUMB_JSON_LD: breadcrumbJsonLd,
             TOC: post.toc || generateArticleSidebar(post, posts),
             MOBILE_TOC: post.toc || '',
             MOBILE_TOC_ATTR: post.toc ? '' : ' style="display:none"',
