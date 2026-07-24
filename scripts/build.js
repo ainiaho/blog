@@ -404,6 +404,22 @@ function estimateReadingTime(html) {
     const minutes = (cjkChars - codeCjk) / 300 + (words - codeWords) / 160 + (codeCjk / 150 + codeWords / 80) * 2 + images * 0.2;
     return Math.max(1, Math.round(minutes));
 }
+// Minify HTML output
+function minifyHtml(html) {
+    const protectedBlocks = [];
+    html = html.replace(/<(pre|code|script|svg)\b[^>]*>[\s\S]*?<\/\1>/gi, m => {
+        protectedBlocks.push(m);
+        return `\x00PROTECT_HTML_${protectedBlocks.length - 1}\x00`;
+    });
+    html = html
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/>\s+</g, '><')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    html = html.replace(/\x00PROTECT_HTML_(\d+)\x00/g, (_, i) => protectedBlocks[parseInt(i)]);
+    return html;
+}
+
 // Clean output directory
 function cleanOutput() {
     if (fs.existsSync(OUTPUT_DIR)) {
@@ -625,7 +641,7 @@ function generateHomepage(posts, page = 1) {
             CONTENT: renderPostList(posts, ''),
             PAGINATION: ''
         });
-        fs.writeFileSync(path.join(OUTPUT_DIR, 'index.html'), html);
+        fs.writeFileSync(path.join(OUTPUT_DIR, 'index.html'), minifyHtml(html));
         console.log('Generated: index.html');
         return;
     }
@@ -702,7 +718,7 @@ function generateHomepage(posts, page = 1) {
         }
     }
     
-    fs.writeFileSync(path.join(OUTPUT_DIR, filename), html);
+    fs.writeFileSync(path.join(OUTPUT_DIR, filename), minifyHtml(html));
     console.log(`Generated: ${filename}`);
 }
 
@@ -996,7 +1012,7 @@ function generatePostPages(posts) {
         fs.mkdirSync(outputDir, { recursive: true });
         
         const outputPath = path.join(outputDir, `${post.filename.replace(/\.md$/, '')}.html`);
-        fs.writeFileSync(outputPath, html);
+        fs.writeFileSync(outputPath, minifyHtml(html));
         console.log(`Generated: posts/${post.slug}.html`);
     });
 }
@@ -1057,7 +1073,7 @@ function generateCategoryPages(posts) {
         });
 
         const outputPath = path.join(OUTPUT_DIR, 'categories', `${category}.html`);
-        fs.writeFileSync(outputPath, html);
+        fs.writeFileSync(outputPath, minifyHtml(html));
         console.log(`Generated: categories/${category}.html`);
     });
 }
@@ -1167,7 +1183,7 @@ function generateSearchPage(posts) {
         CONTENT: content
     });
 
-    fs.writeFileSync(path.join(OUTPUT_DIR, 'search.html'), html);
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'search.html'), minifyHtml(html));
     console.log('Generated: search.html');
 }
 
@@ -1279,7 +1295,7 @@ function generate404() {
 </body>
 </html>
  `;
-    fs.writeFileSync(path.join(OUTPUT_DIR, '404.html'), html);
+    fs.writeFileSync(path.join(OUTPUT_DIR, '404.html'), minifyHtml(html));
     console.log('Generated: 404.html');
 }
 
@@ -1363,7 +1379,7 @@ function generateTagPages(posts) {
 
         const tagDir = path.join(OUTPUT_DIR, 'tags');
         fs.mkdirSync(tagDir, { recursive: true });
-        fs.writeFileSync(path.join(tagDir, `${encodeURIComponent(tag)}.html`), html);
+        fs.writeFileSync(path.join(tagDir, `${encodeURIComponent(tag)}.html`), minifyHtml(html));
         console.log(`Generated: tags/${tag}.html`);
     });
 
@@ -1395,7 +1411,7 @@ function generateTagPages(posts) {
         PAGINATION: ''
     });
 
-    fs.writeFileSync(path.join(OUTPUT_DIR, 'tags', 'index.html'), cloudHtml);
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'tags', 'index.html'), minifyHtml(cloudHtml));
     console.log('Generated: tags/index.html');
 }
 
@@ -1451,7 +1467,7 @@ function generateOfflinePage() {
     </div>
 </body>
 </html>`;
-    fs.writeFileSync(path.join(OUTPUT_DIR, 'offline.html'), html);
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'offline.html'), minifyHtml(html));
     console.log('Generated: offline.html');
 }
 
