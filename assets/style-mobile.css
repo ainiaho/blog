@@ -253,8 +253,14 @@ body {
 
 .nav-links {
     display: flex;
+    align-items: center;
     list-style: none;
     gap: 2px;
+}
+
+.nav-links li {
+    display: flex;
+    align-items: center;
 }
 
 .nav-links a {
@@ -1430,10 +1436,11 @@ body {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 15px;
-    padding: 4px 6px;
-    border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 8px;
     color: var(--text-secondary);
+    transition: all 0.2s;
 }
 
 /* ============================================================
