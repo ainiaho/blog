@@ -802,9 +802,10 @@ body {
     scroll-margin-top: 80px;
 }
 
-/* github-markdown-css 背景透明化 */
+/* github-markdown-css 背景及文字颜色透明化适配 */
 .markdown-body {
     background: transparent !important;
+    color: var(--text-primary);
 }
 
 /* 分享区域 */

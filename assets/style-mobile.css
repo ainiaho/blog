@@ -653,6 +653,7 @@ body {
 
 .markdown-body {
     background: transparent !important;
+    color: var(--text-primary);
 }
 
 .post-content h1,
