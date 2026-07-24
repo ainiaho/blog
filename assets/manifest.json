@@ -1,7 +1,7 @@
 {
-  "name": "西南",
-  "short_name": "西南",
-  "description": "西南的个人博客",
+  "name": "kzks",
+  "short_name": "kzks",
+  "description": "kzks - personal blog",
   "start_url": "/index.html",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],

@@ -652,12 +652,12 @@ function generateHomepage(posts, page = 1) {
     // If only one page, no pagination needed
     if (totalPages <= 1) {
         renderPostList(posts, '');
-        const websiteJsonLd = '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "WebSite",\n  "name": "西南",\n  "url": "https://blog.diepthink.top/",\n  "potentialAction": {\n    "@type": "SearchAction",\n    "target": {\n      "@type": "EntryPoint",\n      "urlTemplate": "https://blog.diepthink.top/search.html?q={search_term_string}"\n    },\n    "query-input": "required name=search_term_string"\n  }\n}\n</script>';
+        const websiteJsonLd = '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "WebSite",\n  "name": "kzks",\n  "url": "https://blog.diepthink.top/",\n  "potentialAction": {\n    "@type": "SearchAction",\n    "target": {\n      "@type": "EntryPoint",\n      "urlTemplate": "https://blog.diepthink.top/search.html?q={search_term_string}"\n    },\n    "query-input": "required name=search_term_string"\n  }\n}\n</script>';
         const html = renderTemplate(layoutTemplate, {
-            TITLE: '西南',
-            META_DESC: '西南的个人博客',
-            OG_TITLE: '西南',
-            OG_DESC: '西南 the personal blog',
+            TITLE: 'kzks',
+            META_DESC: 'kzks - personal blog',
+            OG_TITLE: 'kzks',
+            OG_DESC: 'kzks the personal blog',
             OG_URL: '/',
             OG_IMAGE: '/assets/avatar.jpg',
             OG_TYPE: 'website',
@@ -709,10 +709,10 @@ function generateHomepage(posts, page = 1) {
 
     pagination += '</div>';
 
-    const metaDesc = page === 1 ? '西南的个人博客' : `第 ${page} 页 - 西南的个人博客`;
+    const metaDesc = page === 1 ? 'kzks - personal blog' : `第 ${page} 页 - kzks - personal blog`;
     const canonicalUrl = page === 1 ? '/' : `/page/${page}.html`;
     const baseUrl = 'https://blog.diepthink.top';
-    const websiteJsonLd = page === 1 ? '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "WebSite",\n  "name": "西南",\n  "url": "https://blog.diepthink.top/",\n  "potentialAction": {\n    "@type": "SearchAction",\n    "target": {\n      "@type": "EntryPoint",\n      "urlTemplate": "https://blog.diepthink.top/search.html?q={search_term_string}"\n    },\n    "query-input": "required name=search_term_string"\n  }\n}\n</script>' : '';
+    const websiteJsonLd = page === 1 ? '<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "WebSite",\n  "name": "kzks",\n  "url": "https://blog.diepthink.top/",\n  "potentialAction": {\n    "@type": "SearchAction",\n    "target": {\n      "@type": "EntryPoint",\n      "urlTemplate": "https://blog.diepthink.top/search.html?q={search_term_string}"\n    },\n    "query-input": "required name=search_term_string"\n  }\n}\n</script>' : '';
     let prevNextRel = '';
     if (page > 1) {
         const prevHref = page === 2 ? '/' : `/page/${page - 1}.html`;
@@ -722,9 +722,9 @@ function generateHomepage(posts, page = 1) {
         prevNextRel += `<link rel="next" href="${baseUrl}/page/${page + 1}.html">\n`;
     }
     const html = renderTemplate(layoutTemplate, {
-        TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
+TITLE: page === 1 ? 'kzks' : `第 ${page} 页 - kzks`,
         META_DESC: metaDesc,
-        OG_TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
+        OG_TITLE: page === 1 ? 'kzks' : `第 ${page} 页 - kzks`,
         OG_DESC: metaDesc,
         OG_URL: page === 1 ? '/' : `/page/${page}.html`,
         OG_IMAGE: '/assets/avatar.jpg',
@@ -1022,9 +1022,9 @@ function generatePostPages(posts) {
             breadcrumbJsonLd = `<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "BreadcrumbList",\n  "itemListElement": [{\n    "@type": "ListItem",\n    "position": 1,\n    "name": "首页",\n    "item": "${baseUrl}/"\n  },{\n    "@type": "ListItem",\n    "position": 2,\n    "name": "${safeTitle}",\n    "item": "${baseUrl}/posts/${post.slug}.html"\n  }]\n}\n</script>`;
         }
         const html = renderTemplate(articleTemplate, {
-            TITLE: post.title + ' - 西南',
+            TITLE: post.title + ' - kzks',
             META_DESC: ogDesc,
-            OG_TITLE: post.title + ' - 西南',
+            OG_TITLE: post.title + ' - kzks',
             OG_DESC: ogDesc,
             OG_URL: `/posts/${post.slug}.html`,
             OG_IMAGE: '/assets/avatar.jpg',
@@ -1131,9 +1131,9 @@ function generateCategoryPages(posts) {
             const ogUrl = page === 1 ? `/categories/${category}.html` : `/categories/${category}/page/${page}.html`;
 
             const html = renderTemplate(categoryTemplate, {
-                TITLE: page === 1 ? `${category} - 西南` : `${category} - 第 ${page} 页 - 西南`,
+                TITLE: page === 1 ? `${category} - kzks` : `${category} - 第 ${page} 页 - kzks`,
                 META_DESC: desc,
-                OG_TITLE: `${category} - 西南`,
+                OG_TITLE: `${category} - kzks`,
                 OG_DESC: desc,
                 OG_URL: ogUrl,
                 OG_IMAGE: '/assets/avatar.jpg',
@@ -1258,9 +1258,9 @@ function generateSearchPage(posts) {
 `;
 
     const html = renderTemplate(searchTemplate, {
-        TITLE: '搜索 - 西南',
+        TITLE: '搜索 - kzks',
         META_DESC: '在博客中搜索文章',
-        OG_TITLE: '搜索 - 西南',
+        OG_TITLE: '搜索 - kzks',
         OG_DESC: '在博客中搜索文章',
         OG_URL: '/search.html',
         OG_IMAGE: '/assets/avatar.jpg',
@@ -1479,9 +1479,9 @@ function generateTagPages(posts) {
 
         const tagDesc = `标签 ${tag} - ${tagPosts.length} 篇文章`;
         const html = renderTemplate(layout, {
-            TITLE: `${tag} - 标签 - 西南`,
+            TITLE: `${tag} - 标签 - kzks`,
             META_DESC: tagDesc,
-            OG_TITLE: `${tag} - 标签 - 西南`,
+            OG_TITLE: `${tag} - 标签 - kzks`,
             OG_DESC: tagDesc,
             OG_URL: `/tags/${encodeURIComponent(tag)}.html`,
             OG_IMAGE: '/assets/avatar.jpg',
@@ -1516,9 +1516,9 @@ function generateTagPages(posts) {
     cloudContent += '</div>';
 
     const cloudHtml = renderTemplate(layout, {
-        TITLE: '标签云 - 西南',
+        TITLE: '标签云 - kzks',
         META_DESC: `共 ${tags.length} 个标签`,
-        OG_TITLE: '标签云 - 西南',
+        OG_TITLE: '标签云 - kzks',
         OG_DESC: `共 ${tags.length} 个标签`,
         OG_URL: '/tags/index.html',
         OG_IMAGE: '/assets/avatar.jpg',
@@ -1542,7 +1542,7 @@ function generateOfflinePage() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>离线 - 西南</title>
+    <title>离线 - kzks</title>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1599,9 +1599,9 @@ function generateFeed(posts) {
      xmlns:atom="http://www.w3.org/2005/Atom"
      xmlns:content="http://purl.org/rss/1.0/modules/content/">
 <channel>
-    <title>西南</title>
+    <title>kzks</title>
     <link>${baseUrl}</link>
-    <description>西南的个人博客</description>
+    <description>kzks - personal blog</description>
     <language>zh-CN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
