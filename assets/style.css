@@ -4,25 +4,25 @@
 
 :root {
     /* Apple Liquid Glass - 全透明玻璃材质 */
-    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-bg: rgba(255, 255, 255, 0.45);
     --glass-blur: blur(24px) saturate(200%);
     --glass-filter: var(--glass-blur);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.4);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.5);
     --glass-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.3),
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    --glass-shadow-hover:
-        0 0 0 1px rgba(255, 255, 255, 0.5),
-        0 12px 40px rgba(0, 0, 0, 0.12),
+        0 1px 2px rgba(0, 0, 0, 0.02),
+        0 8px 30px rgba(0, 0, 0, 0.04),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --glass-shadow-hover:
+        0 1px 2px rgba(0, 0, 0, 0.02),
+        0 12px 40px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
     --glass-radius: 20px;
     --glass-radius-sm: 14px;
 
     /* System Colors */
     --accent: #007aff;
     --accent-hover: #0056b3;
-    --accent-light: rgba(0, 122, 255, 0.12);
+    --accent-light: rgba(0, 122, 255, 0.08);
 
     /* System Gray Palette */
     --gray1: #8e8e93;
@@ -51,16 +51,16 @@
 @media (prefers-color-scheme: dark) {
     :root {
         /* Dark Mode Liquid Glass */
-        --glass-bg: rgba(20, 20, 25, 0.35);
-        --glass-border: 1px solid rgba(255, 255, 255, 0.15);
+        --glass-bg: rgba(25, 25, 30, 0.55);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.08);
         --glass-shadow:
-            0 0 0 1px rgba(255, 255, 255, 0.1),
-            0 8px 32px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            0 1px 2px rgba(0, 0, 0, 0.2),
+            0 8px 30px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
         --glass-shadow-hover:
-            0 0 0 1px rgba(255, 255, 255, 0.18),
-            0 12px 40px rgba(0, 0, 0, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            0 1px 2px rgba(0, 0, 0, 0.2),
+            0 12px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
         --text-primary: #f5f5f7;
         --text-secondary: #a1a1a6;
@@ -137,10 +137,10 @@ html { scroll-behavior: smooth; }
    BODY — Apple System Background
    ============================================================ */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, -apple-system, BlinkMacSystemFont, 
-                 "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Lantinghei SC", "Microsoft YaHei", sans-serif;
     font-size: 15px;
-    line-height: 1.5;
+    line-height: 1.75;
+    letter-spacing: 0.02em;
     color: var(--text-primary);
     background-color: #fafafa;
     background-attachment: fixed;
@@ -171,10 +171,11 @@ body {
     border: var(--glass-border);
     border-radius: var(--glass-radius);
     box-shadow: var(--glass-shadow);
-    transition: var(--transition);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
 }
 .glass:hover {
     box-shadow: var(--glass-shadow-hover);
+    transform: scale(1.008) translateY(-2px);
 }
 .glass-sm {
     border-radius: var(--glass-radius-sm);
@@ -355,6 +356,11 @@ body {
     box-shadow:
         0 4px 16px rgba(0, 0, 0, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-avatar img:hover {
+    transform: rotate(5deg) scale(1.05);
 }
 
 .sidebar-bio { text-align: center; }
@@ -407,6 +413,7 @@ body {
     text-decoration: none;
     border-radius: 12px;
     border: 1px solid transparent;
+    border-left: 2px solid transparent;
     transition: var(--transition);
 }
 
@@ -414,6 +421,7 @@ body {
     color: var(--text-primary);
     background: rgba(255, 255, 255, 0.4);
     border-color: rgba(255, 255, 255, 0.5);
+    border-left-color: var(--accent);
 }
 
 .category-list .sidebar-link.hidden {
@@ -1028,14 +1036,17 @@ body {
 .post-content pre,
 .post-content .highlight pre {
     position: relative !important;
-    margin: 16px 0 !important;
-    padding: 16px !important;
-    font-size: 14px !important;
+    margin: 20px 0 !important;
+    padding: 18px !important;
+    font-size: 13.5px !important;
     line-height: 1.6 !important;
     overflow: auto;
-    border-radius: 6px !important;
-    background: #f6f8fa !important;
-    border: 1px solid #d0d7de !important;
+    border-radius: 12px !important;
+    background: rgba(246, 248, 250, 0.7) !important;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(208, 215, 222, 0.5) !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
 }
 
 /* 代码内容 */
@@ -1130,9 +1141,11 @@ body {
 
 /* 暗色主题代码块 */
 .post-content pre.dark-theme {
-    background: #0d1117 !important;
-    border-color: #30363d !important;
+    background: rgba(13, 17, 23, 0.7) !important;
+    border-color: rgba(48, 54, 61, 0.5) !important;
     color: #c9d1d9 !important;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 .post-content pre.dark-theme .code-copy-btn {
