@@ -412,68 +412,176 @@ function cleanOutput() {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     fs.mkdirSync(path.join(OUTPUT_DIR, 'assets'), { recursive: true });
     fs.mkdirSync(path.join(OUTPUT_DIR, 'categories'), { recursive: true });
+    fs.mkdirSync(path.join(OUTPUT_DIR, 'posts'), { recursive: true });
+    fs.mkdirSync(path.join(OUTPUT_DIR, 'page'), { recursive: true });
+    fs.mkdirSync(path.join(OUTPUT_DIR, 'tags'), { recursive: true });
+}
+
+// Generate AI Description helper function using gemini-3.5-flash
+async function generateAiDescription(title, plainTextContent) {
+    const apiKey = 'sk-QbnCnf3GhoD3YkphyKVFIczTeOiPkne9z0Zka56eCbVbXzOP';
+    const baseUrl = 'https://api.littlecold.cn/v1/chat/completions';
+    
+    const payload = JSON.stringify({
+        model: "gemini-3.5-flash",
+        messages: [
+            {
+                role: "system",
+                content: "你是一个专业的文章摘要助手。请为用户提供的文章生成一段简明扼要、吸引人的网页 description (SEO 描述)。字数控制在 100-150 字之间，只返回摘要正文，不要包含任何 markdown 标记、换行符或多余的引导词。"
+            },
+            {
+                role: "user",
+                content: `文章标题: ${title}\n\n文章内容摘要:\n${plainTextContent.substring(0, 1000)}`
+            }
+        ],
+        max_tokens: 150
+    });
+
+    return new Promise((resolve, reject) => {
+        const url = new URL(baseUrl);
+        const req = require('https').request({
+            hostname: url.hostname,
+            path: url.pathname + url.search,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Length': Buffer.byteLength(payload)
+            },
+            timeout: 10000 // 10s timeout
+        }, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(data);
+                    if (json.choices && json.choices[0] && json.choices[0].message) {
+                        resolve(json.choices[0].message.content.trim().replace(/\n/g, ' '));
+                    } else {
+                        reject(new Error('Invalid API response format'));
+                    }
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        });
+
+        req.on('error', reject);
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('Request Timeout'));
+        });
+        req.write(payload);
+        req.end();
+    });
 }
 
 // Copy assets
 function copyAssets() {
     const files = fs.readdirSync(ASSETS_DIR);
+    const buildVersion = Date.now().toString(); // Generate unique version for Cache-Busting sw.js
+    
     files.forEach(file => {
         const src = path.join(ASSETS_DIR, file);
         const dest = path.join(OUTPUT_DIR, 'assets', file);
-        fs.copyFileSync(src, dest);
+        
+        if (file === 'sw.js') {
+            // Replace VERSION_PLACEHOLDER dynamically in sw.js
+            let swContent = fs.readFileSync(src, 'utf-8');
+            swContent = swContent.replace('VERSION_PLACEHOLDER', buildVersion);
+            fs.writeFileSync(dest, swContent, 'utf-8');
+            console.log(`PWA Service Worker updated with version: ${buildVersion}`);
+        } else {
+            fs.copyFileSync(src, dest);
+        }
     });
 }
 
 // Read all posts (supports categories as subdirectories)
-function readPosts() {
+async function readPosts() {
     const posts = [];
+    const filesToProcess = [];
 
-    // Recursively read directories
-    function readDirRecursive(dir, baseDir) {
+    // Recursively collect all files first so we can process them sequentially or in parallel
+    function collectFiles(dir, baseDir) {
         const entries = fs.readdirSync(dir, { withFileTypes: true });
-        
         entries.forEach(entry => {
             const fullPath = path.join(dir, entry.name);
             if (entry.isDirectory()) {
-                readDirRecursive(fullPath, baseDir);
+                collectFiles(fullPath, baseDir);
             } else if (entry.isFile() && entry.name.endsWith('.md')) {
-                const content = fs.readFileSync(fullPath, 'utf-8');
-                const { html, frontmatter, toc } = parseMarkdown(content);
-                
-                // Category is the subdirectory name relative to posts/
-                const relativePath = path.relative(baseDir, fullPath);
-                const pathParts = path.dirname(relativePath).split(path.sep);
-                const category = pathParts.length > 0 && pathParts[0] !== '' ? pathParts[0] : '';
-                
-                const slug = generateSlug(entry.name);
-                const urlSlug = category ? `${category}/${slug}` : slug;
-
-                // Add lazy loading to images (Zero Dependency Optimization)
-                const lazyHtml = html.replace(/<img /g, '<img loading="lazy" ');
-
-                const readingTime = estimateReadingTime(lazyHtml);
-
-                posts.push({
-                    slug: urlSlug,
-                    filename: entry.name,
-                    category: category,
-                    title: frontmatter.title || 'Untitled',
-                    date: frontmatter.date || '',
-                    author: frontmatter.author || '',
-                    tags: frontmatter.tags || [],
-                    series: frontmatter.series || '',
-                    order: frontmatter.order || 0,
-                    content: lazyHtml,
-                    toc: toc,
-                    excerpt: lazyHtml.replace(/<[^>]*>/g, '').substring(0, 200) + '...',
-                    description: frontmatter.description || lazyHtml.replace(/<[^>]*>/g, '').substring(0, 160).trim(),
-                    readingTime: readingTime
-                });
+                filesToProcess.push({ fullPath, relativeDir: path.relative(baseDir, fullPath), filename: entry.name });
             }
         });
     }
 
-    readDirRecursive(POSTS_DIR, POSTS_DIR);
+    collectFiles(POSTS_DIR, POSTS_DIR);
+
+    for (const { fullPath, relativeDir, filename } of filesToProcess) {
+        const content = fs.readFileSync(fullPath, 'utf-8');
+        const { html, frontmatter, toc } = parseMarkdown(content);
+        
+        // Category is the subdirectory name relative to posts/
+        const pathParts = path.dirname(relativeDir).split(path.sep);
+        const category = pathParts.length > 0 && pathParts[0] !== '' ? pathParts[0] : '';
+        
+        const slug = generateSlug(filename);
+        const urlSlug = category ? `${category}/${slug}` : slug;
+
+        // Add lazy loading to images (Zero Dependency Optimization)
+        const lazyHtml = html.replace(/<img /g, '<img loading="lazy" ');
+
+        const readingTime = estimateReadingTime(lazyHtml);
+        const plainText = lazyHtml.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+
+        let description = frontmatter.description;
+        if (!description) {
+            console.log(`[AI] 检测到文章 "${frontmatter.title || filename}" 缺失 description，正在使用 AI 自动生成...`);
+            try {
+                description = await generateAiDescription(frontmatter.title || filename, plainText);
+                console.log(`[AI] 生成成功: ${description}`);
+                
+                // 写回原 Markdown 文件的 Frontmatter
+                let updatedContent = content;
+                const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+                if (frontmatterMatch) {
+                    const frontmatterStr = frontmatterMatch[1];
+                    // 如果已经包含 description 的键但值为空，做替换，否则追加
+                    if (/^description:\s*/m.test(frontmatterStr)) {
+                        const newFm = frontmatterStr.replace(/^description:\s*.*$/m, `description: "${description.replace(/"/g, '\\"')}"`);
+                        updatedContent = content.replace(frontmatterMatch[0], `---\n${newFm}\n---`);
+                    } else {
+                        const newFm = frontmatterStr.trim() + `\ndescription: "${description.replace(/"/g, '\\"')}"`;
+                        updatedContent = content.replace(frontmatterMatch[0], `---\n${newFm}\n---`);
+                    }
+                } else {
+                    updatedContent = `---\ntitle: "${frontmatter.title || filename}"\ndescription: "${description.replace(/"/g, '\\"')}"\n---\n\n` + content;
+                }
+                fs.writeFileSync(fullPath, updatedContent, 'utf-8');
+                console.log(`[AI] 已写回到原文件: ${relativeDir}`);
+            } catch (err) {
+                console.error(`[AI] 自动生成失败 (${err.message})，使用正文截取作为兜底。`);
+                description = plainText.substring(0, 160).trim();
+            }
+        }
+
+        posts.push({
+            slug: urlSlug,
+            filename: filename,
+            category: category,
+            title: frontmatter.title || 'Untitled',
+            date: frontmatter.date || '',
+            author: frontmatter.author || '',
+            tags: frontmatter.tags || [],
+            series: frontmatter.series || '',
+            order: frontmatter.order || 0,
+            content: lazyHtml,
+            toc: toc,
+            excerpt: lazyHtml.replace(/<[^>]*>/g, '').substring(0, 200) + '...',
+            description: description,
+            readingTime: readingTime
+        });
+    }
 
     // Sort by date descending (newest first), no-date posts at end
     return posts.sort((a, b) => {
@@ -547,14 +655,17 @@ function generateHomepage(posts, page = 1) {
 
     pagination += '</div>';
 
+    const metaDesc = page === 1 ? '西南的个人博客' : `第 ${page} 页 - 西南的个人博客`;
+    const canonicalUrl = page === 1 ? '/' : `/page/${page}.html`;
     const html = renderTemplate(layoutTemplate, {
         TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
-        META_DESC: '西南的个人博客',
+        META_DESC: metaDesc,
         OG_TITLE: page === 1 ? '西南' : `第 ${page} 页 - 西南`,
-        OG_DESC: '西南的个人博客',
+        OG_DESC: metaDesc,
         OG_URL: page === 1 ? '/' : `/page/${page}.html`,
         OG_IMAGE: '/assets/avatar.jpg',
         OG_TYPE: 'website',
+        CANONICAL_URL: canonicalUrl,
         SIDEBAR: renderSidebar(posts),
         CONTENT: content,
         PAGINATION: pagination
@@ -833,6 +944,7 @@ function generatePostPages(posts) {
         `;
 
         const ogDesc = post.description || post.excerpt.replace(/<[^>]*>/g, '').substring(0, 160);
+        const isoDate = post.date ? new Date(post.date).toISOString() : new Date().toISOString();
         const html = renderTemplate(articleTemplate, {
             TITLE: post.title + ' - 西南',
             META_DESC: ogDesc,
@@ -841,6 +953,9 @@ function generatePostPages(posts) {
             OG_URL: `/posts/${post.slug}.html`,
             OG_IMAGE: '/assets/avatar.jpg',
             OG_TYPE: 'article',
+            CANONICAL_URL: `/posts/${post.slug}.html`,
+            AUTHOR: post.author || '西南',
+            DATE_PUBLISHED: isoDate,
             TOC: post.toc || generateArticleSidebar(post, posts),
             MOBILE_TOC: post.toc || '',
             MOBILE_TOC_ATTR: post.toc ? '' : ' style="display:none"',
@@ -1145,8 +1260,20 @@ function generateSitemap(posts) {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
     // Static pages
-    ['', '/search.html'].forEach(page => {
+    ['', '/search.html', '/tags/index.html'].forEach(page => {
         xml += `  <url><loc>${baseUrl}${page}</loc><priority>${page === '' ? '1.0' : '0.8'}</priority></url>\n`;
+    });
+
+    // Categories
+    const categories = [...new Set(posts.map(p => p.category).filter(c => c))];
+    categories.forEach(category => {
+        xml += `  <url><loc>${baseUrl}/categories/${category}.html</loc><priority>0.5</priority></url>\n`;
+    });
+
+    // Tags
+    const tagMap = collectTags(posts);
+    Object.keys(tagMap).forEach(tag => {
+        xml += `  <url><loc>${baseUrl}/tags/${encodeURIComponent(tag)}.html</loc><priority>0.4</priority></url>\n`;
     });
 
     // Posts
@@ -1157,6 +1284,17 @@ function generateSitemap(posts) {
     xml += '</urlset>';
     fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap.xml'), xml);
     console.log('Generated: sitemap.xml');
+}
+
+// Generate robots.txt
+function generateRobots() {
+    const robots = `User-agent: *
+Allow: /
+Disallow: /assets/
+Sitemap: https://blog.diepthink.top/sitemap.xml
+`;
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'robots.txt'), robots);
+    console.log('Generated: robots.txt');
 }
 
 // Generate tag pages and tag cloud
@@ -1275,7 +1413,7 @@ async function build() {
     cleanOutput();
     copyAssets();
 
-    const posts = readPosts();
+    const posts = await readPosts();
     console.log(`Found ${posts.length} posts\n`);
 
     generatePaginationPages(posts);
@@ -1286,6 +1424,7 @@ async function build() {
     generateSearchPage(posts);
     generate404();
     generateSitemap(posts);
+    generateRobots();
     generateFeed(posts);
 
     // Copy .well-known (SSL domain validation, etc.) to output

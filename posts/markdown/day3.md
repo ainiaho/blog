@@ -2,7 +2,7 @@
 title: markdown学习（3）
 date: 2026-05-06
 author: 西南
-description: 本文档系统介绍了 Mermaid 思维导图（mindmap）的核心语法与使用技巧，包括缩进规则、节点外观符号（圆角矩形、矩形、圆形、菱形、旗帜形）、Font Awesome 图标嵌入方法、节点颜色定制以及特殊字符处理。通过实际示例和详细注释，帮助读者快速掌握在 Markdown 中构建层级清晰、外观多样的思维导图，无需外部工具或图片。内容覆盖常见渲染器（GitHub、Typora、Obsidian 等）的兼容性说明及注意事项，是 Markdown 进阶写作与可视化梳理的实用参考。
+description: "快速掌握使用 Mermaid 语法绘制思维��图的实用技巧！本文详细解析 Mermaid mindmap 的核心语法，包括利用缩进表示层级、通过特定符号定制节点外观、添加 Font Awesome 图标以及自定义颜色等高级样式，同时分享了缩进规则和特殊字符处理等避坑指南，助你轻松绘制结构清晰的思维导图。"
 series: markdown
 ---
 # 思维导图
