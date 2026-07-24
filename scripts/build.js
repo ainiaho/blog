@@ -427,11 +427,11 @@ async function generateAiDescription(title, plainTextContent) {
         messages: [
             {
                 role: "system",
-                content: "你是一个专业的文章摘要助手。请为用户提供的文章生成一段简明扼要、吸引人的网页 description (SEO 描述)。字数控制在 100-150 字之间，只返回摘要正文，不要包含任何 markdown 标记、换行符或多余的引导词。"
+                content: "你是一个专业的网页 SEO 描述生成助手。请为提供的文章撰写一段网页 description 摘要。要求：1) 用你自己的语言提炼核心观点和涵盖的知识点，严禁直接复制或截取原文中的整句；2) 字数控制在 100-150 字之间；3) 只返回纯文本摘要，不要任何 markdown 标记、换行符、引导词或标点修饰。"
             },
             {
                 role: "user",
-                content: `文章标题: ${title}\n\n文章内容摘要:\n${plainTextContent.substring(0, 1000)}`
+                content: `文章标题: ${title}\n\n文章正文（请勿直接复制，用你自己的话概括）:\n${plainTextContent.substring(0, 1000)}`
             }
         ],
         max_tokens: 150
@@ -536,32 +536,37 @@ async function readPosts() {
 
         let description = frontmatter.description;
         if (!description) {
-            console.log(`[AI] 检测到文章 "${frontmatter.title || filename}" 缺失 description，正在使用 AI 自动生成...`);
-            try {
-                description = await generateAiDescription(frontmatter.title || filename, plainText);
-                console.log(`[AI] 生成成功: ${description}`);
-                
-                // 写回原 Markdown 文件的 Frontmatter
-                let updatedContent = content;
-                const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-                if (frontmatterMatch) {
-                    const frontmatterStr = frontmatterMatch[1];
-                    // 如果已经包含 description 的键但值为空，做替换，否则追加
-                    if (/^description:\s*/m.test(frontmatterStr)) {
-                        const newFm = frontmatterStr.replace(/^description:\s*.*$/m, `description: "${description.replace(/"/g, '\\"')}"`);
-                        updatedContent = content.replace(frontmatterMatch[0], `---\n${newFm}\n---`);
+            if (plainText.length < 10) {
+                console.log(`[SKIP] 文章 "${frontmatter.title || filename}" 正文过短，跳过 AI 摘要`);
+                description = '';
+            } else {
+                console.log(`[AI] 检测到文章 "${frontmatter.title || filename}" 缺失 description，正在使用 AI 自动生成...`);
+                try {
+                    description = await generateAiDescription(frontmatter.title || filename, plainText);
+                    console.log(`[AI] 生成成功: ${description}`);
+
+                    // 写回原 Markdown 文件的 Frontmatter
+                    let updatedContent = content;
+                    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+                    if (frontmatterMatch) {
+                        const frontmatterStr = frontmatterMatch[1];
+                        // 如果已经包含 description 的键但值为空，做替换，否则追加
+                        if (/^description:\s*/m.test(frontmatterStr)) {
+                            const newFm = frontmatterStr.replace(/^description:\s*.*$/m, `description: "${description.replace(/"/g, '\\"')}"`);
+                            updatedContent = content.replace(frontmatterMatch[0], `---\n${newFm}\n---`);
+                        } else {
+                            const newFm = frontmatterStr.trim() + `\ndescription: "${description.replace(/"/g, '\\"')}"`;
+                            updatedContent = content.replace(frontmatterMatch[0], `---\n${newFm}\n---`);
+                        }
                     } else {
-                        const newFm = frontmatterStr.trim() + `\ndescription: "${description.replace(/"/g, '\\"')}"`;
-                        updatedContent = content.replace(frontmatterMatch[0], `---\n${newFm}\n---`);
+                        updatedContent = `---\ntitle: "${frontmatter.title || filename}"\ndescription: "${description.replace(/"/g, '\\"')}"\n---\n\n` + content;
                     }
-                } else {
-                    updatedContent = `---\ntitle: "${frontmatter.title || filename}"\ndescription: "${description.replace(/"/g, '\\"')}"\n---\n\n` + content;
+                    fs.writeFileSync(fullPath, updatedContent, 'utf-8');
+                    console.log(`[AI] 已写回到原文件: ${relativeDir}`);
+                } catch (err) {
+                    console.error(`[AI] 自动生成失败 (${err.message})，使用正文截取作为兜底。`);
+                    description = plainText.substring(0, 160).trim();
                 }
-                fs.writeFileSync(fullPath, updatedContent, 'utf-8');
-                console.log(`[AI] 已写回到原文件: ${relativeDir}`);
-            } catch (err) {
-                console.error(`[AI] 自动生成失败 (${err.message})，使用正文截取作为兜底。`);
-                description = plainText.substring(0, 160).trim();
             }
         }
 
